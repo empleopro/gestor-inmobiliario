@@ -3,34 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urbanización Sapucai - Lotes</title>
+    <title>Loteamiento Sapucai | Portal Inmobiliario</title>
     <!-- CSS de Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 0; display: flex; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f7; }
-        
-        #map { width: 70%; height: 100vh; }
-        
-        #panel { width: 30%; background: white; padding: 30px; box-sizing: border-box; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; }
-        
-        h1 { color: #2c3e50; font-size: 1.8rem; margin-top: 0; }
-        p { color: #7f8c8d; line-height: 1.6; }
-        
-        .leyenda { background: #f8f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e8e8; }
-        .leyenda-item { display: flex; align-items: center; margin-bottom: 10px; font-weight: bold; color: #34495e; }
-        .caja-color { width: 20px; height: 20px; margin-right: 10px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.2); }
-        .color-libre { background: #2ecc71; }
-        .color-vendido { background: #e74c3c; }
-        .color-verde { background: #27ae60; }
-        
-        .btn-maps { display: block; width: 100%; background: #4285F4; color: white; text-align: center; padding: 15px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; margin-top: 10px; transition: 0.3s; box-sizing: border-box; }
-        .btn-maps:hover { background: #3367d6; box-shadow: 0 4px 8px rgba(66, 133, 244, 0.4); }
-        
-        .btn-whatsapp { display: block; width: 100%; background: #25D366; color: white; text-align: center; padding: 15px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; transition: 0.3s; box-sizing: border-box; }
-        .btn-whatsapp:hover { background: #1ebe57; box-shadow: 0 4px 8px rgba(37, 211, 102, 0.4); }
+        :root {
+            --primary: #1e293b;
+            --accent: #0284c7;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #059669;
+            --info: #2563eb;
+            --bg-panel: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+        }
 
-        /* Vuelve el círculo blanco limpio solo con el número */
-        .etiqueta-lote { background-color: white; border-radius: 50%; color: #333; font-weight: bold; text-align: center; line-height: 24px; width: 24px !important; height: 24px !important; border: 1px solid #333; font-size: 12px; box-shadow: 1px 1px 4px rgba(0,0,0,0.5); }
+        body { margin: 0; padding: 0; display: flex; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0f172a; color: var(--text-main); }
+        
+        #map { width: 72%; height: 100vh; }
+        
+        #panel { 
+            width: 28%; 
+            background: var(--bg-panel); 
+            padding: 35px 25px; 
+            box-sizing: border-box; 
+            overflow-y: auto; 
+            box-shadow: -10px 0 30px rgba(0,0,0,0.15); 
+            z-index: 1000; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .header-proyecto h1 { color: var(--primary); font-size: 1.5rem; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
+        .header-proyecto p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.5; margin-bottom: 25px; }
+        
+        /* Leyenda moderna */
+        .leyenda { background: #f8fafc; padding: 18px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .leyenda-titulo { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; display: block; }
+        .leyenda-item { display: flex; align-items: center; margin-bottom: 10px; font-weight: 600; font-size: 0.885rem; color: var(--primary); }
+        .leyenda-item:last-child { margin-bottom: 0; }
+        .caja-color { width: 16px; height: 16px; margin-right: 12px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .color-libre { background: #10b981; }
+        .color-vendido { background: #ef4444; }
+        .color-verde { background: #059669; } 
+        .color-recuperado { background: #2563eb; } 
+        
+        /* Botones de acción profesionales */
+        .acciones-container { margin-top: auto; padding-top: 20px; }
+        
+        .btn { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+            width: 100%; 
+            padding: 14px; 
+            text-decoration: none; 
+            border-radius: 10px; 
+            font-weight: 700; 
+            font-size: 0.95rem; 
+            margin-bottom: 12px; 
+            transition: all 0.2s ease; 
+            box-sizing: border-box; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        
+        .btn-maps { background: #ffffff; color: var(--primary); border: 2px solid #e2e8f0; }
+        .btn-maps:hover { background: #f8fafc; border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+        
+        .btn-whatsapp { background: #22c55e; color: white; border: none; }
+        .btn-whatsapp:hover { background: #16a34a; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(34, 197, 94, 0.25); }
+
+        /* Etiquetas minimalistas sobre el mapa */
+        .etiqueta-lote { 
+            background: rgba(15, 23, 42, 0.85); 
+            backdrop-filter: blur(4px);
+            border-radius: 20px; 
+            color: white; 
+            font-weight: 700; 
+            text-align: center; 
+            line-height: 22px; 
+            width: 28px !important; 
+            height: 22px !important; 
+            border: 1px solid rgba(255,255,255,0.3); 
+            font-size: 11px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+        }
+
+        .footer-marca { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -38,38 +101,51 @@
     <div id="map"></div>
 
     <div id="panel">
-        <h1>Loteamiento Sapucai</h1>
-        <p>Descubre tu próximo terreno. Contamos con lotes con posesión inmediata, rodeados de naturaleza y con excelente ubicación estratégica.</p>
-        
-        <div class="leyenda">
-            <div class="leyenda-item">
-                <div class="caja-color color-libre"></div> Lotes Disponibles
-            </div>
-            <div class="leyenda-item">
-                <div class="caja-color color-vendido"></div> Lotes Vendidos
-            </div>
-            <div class="leyenda-item">
-                <div class="caja-color color-verde"></div> Espacios Verdes
+        <div class="header-proyecto">
+            <h1>Loteamiento Sapucai</h1>
+            <p>Selecciona y descubre tu próximo terreno. Espacios ideales con posesión inmediata y alta proyección de valor.</p>
+            
+            <div class="leyenda">
+                <span class="leyenda-titulo">Estado de los Lotes</span>
+                <div class="leyenda-item">
+                    <div class="caja-color color-libre"></div> Disponibles
+                </div>
+                <div class="leyenda-item">
+                    <div class="caja-color color-vendido"></div> Vendidos
+                </div>
+                <div class="leyenda-item">
+                    <div class="caja-color color-verde"></div> Espacios Verdes
+                </div>
+                <div class="leyenda-item">
+                    <div class="caja-color color-recuperado"></div> Lotes Recuperados
+                </div>
             </div>
         </div>
 
-        <a href="https://www.google.com/maps/search/?api=1&query=-25.668092,-56.938836" target="_blank" class="btn-maps">
-            📍 Abrir en Google Maps
-        </a>
-        
-        <a href="https://wa.me/595900000000?text=Hola,%20me%20interesa%20un%20lote%20en%20Sapucai" target="_blank" class="btn-whatsapp">
-            💬 Consultar Disponibilidad
-        </a>
+        <div class="acciones-container">
+            <a href="https://www.google.com/maps/search/?api=1&query=-25.668092,-56.938836" target="_blank" class="btn btn-maps">
+                📍 Ver Ubicación en GPS
+            </a>
+            
+            <a href="https://wa.me/595900000000?text=Hola,%20me%20interesa%20obtener%20más%20información%20sobre%20los%20lotes%20en%20Sapucai" target="_blank" class="btn btn-whatsapp">
+                💬 Consultar por WhatsApp
+            </a>
+            
+            <div class="footer-marca">Gestión Inmobiliaria Profesional</div>
+        </div>
     </div>
 
     <!-- JS de Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map');
+        const map = L.map('map', { zoomControl: false });
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+
         L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-            maxZoom: 21, attribution: '© Google'
+            maxZoom: 21, attribution: '© Google Maps'
         }).addTo(map);
 
+        // TUS NUEVAS COORDENADAS ACTUALIZADAS
         const textoCoordenadas = `
 // Manzana_1_Lote_1 (LIBRE)
 P1: -25.668092, -56.938836
@@ -95,47 +171,47 @@ P2: -25.667938, -56.938417
 P3: -25.667984, -56.938211
 P4: -25.667752, -56.938132
 
-// Manzana_1_Lote_5 (LIBRE)
-P1: -25.668236, -56.938181
-P2: -25.668007, -56.938103
-P3: -25.668054, -56.937895
+// Manzana_1_Lote_5 (VENDIDO)
+P1: -25.668235, -56.938181
+P2: -25.668008, -56.938103
+P3: -25.668054, -56.937898
 P4: -25.668284, -56.937968
 
-// Manzana_1_Lote_6 (LIBRE)
-P1: -25.667777, -56.938023
-P2: -25.667820, -56.937820
-P3: -25.668054, -56.937895
-P4: -25.668007, -56.938103
+// Manzana_1_Lote_6 (VENDIDO)
+P1: -25.668008, -56.938103
+P2: -25.668054, -56.937898
+P3: -25.667819, -56.937820
+P4: -25.667776, -56.938023
 
-// Manzana_1_Lote_7 (LIBRE)
-P1: -25.668128, -56.937838
-P2: -25.668298, -56.937893
-P3: -25.668355, -56.937635
-P4: -25.668186, -56.937579
+// Manzana_1_Lote_7 (VENDIDO)
+P1: -25.667776, -56.938023
+P2: -25.667819, -56.937820
+P3: -25.667582, -56.937744
+P4: -25.667537, -56.937942
 
-// Manzana_1_Lote_8 (LIBRE)
-P1: -25.667956, -56.937783
-P2: -25.668128, -56.937838
-P3: -25.668186, -56.937579
-P4: -25.668014, -56.937525
+// Manzana_1_Lote_8 (VENDIDO)
+P1: -25.667784, -56.937728
+P2: -25.667839, -56.937472
+P3: -25.667669, -56.937414
+P4: -25.667612, -56.937671
 
 // Manzana_1_Lote_9 (LIBRE)
-P1: -25.667956, -56.937783
-P2: -25.667784, -56.937729
-P3: -25.667840, -56.937468
-P4: -25.668014, -56.937525
+P1: -25.667784, -56.937728
+P2: -25.667839, -56.937472
+P3: -25.668014, -56.937527
+P4: -25.667956, -56.937781
 
 // Manzana_1_Lote_10 (LIBRE)
-P1: -25.667784, -56.937729
-P2: -25.667612, -56.937673
-P3: -25.667669, -56.937413
-P4: -25.667840, -56.937468
+P1: -25.667956, -56.937781
+P2: -25.668014, -56.937527
+P3: -25.668186, -56.937579
+P4: -25.668132, -56.937839
 
 // Manzana_1_Lote_11 (LIBRE)
-P1: -25.667820, -56.937820
-P2: -25.667777, -56.938023
-P3: -25.667535, -56.937942
-P4: -25.667580, -56.937747
+P1: -25.668186, -56.937579
+P2: -25.668132, -56.937839
+P3: -25.668298, -56.937895
+P4: -25.668356, -56.937638
         `;
 
         function dibujarLotesParaCliente(texto) {
@@ -147,7 +223,10 @@ P4: -25.667580, -56.937747
                 if (lineas.length === 0) return;
 
                 let titulo = lineas[0];
-                let estado = titulo.includes('VENDIDO') ? 'vendido' : (titulo.includes('VERDE') ? 'verde' : 'libre');
+                let estado = 'libre';
+                if (titulo.includes('VENDIDO')) estado = 'vendido';
+                else if (titulo.includes('VERDE')) estado = 'verde';
+                else if (titulo.includes('RECUPERADO') || titulo.includes('AZUL')) estado = 'recuperado';
                 
                 let numeroMatch = titulo.match(/Lote_(\d+)/i) || titulo.match(/(\d+)/);
                 let numLote = numeroMatch ? numeroMatch[1] : "";
@@ -164,22 +243,25 @@ P4: -25.667580, -56.937747
                 }
 
                 if (puntos.length >= 3) {
-                    let colorFondo = estado === 'vendido' ? '#e74c3c' : (estado === 'verde' ? '#27ae60' : '#2ecc71');
+                    let colorFondo = '#10b981'; // Libre (Esmeralda)
+                    if (estado === 'vendido') colorFondo = '#ef4444'; // Vendido (Rojo)
+                    else if (estado === 'verde') colorFondo = '#059669'; // Verde Bosque
+                    else if (estado === 'recuperado') colorFondo = '#2563eb'; // Azul Recuperado
 
                     let poligono = L.polygon(puntos, {
-                        color: '#ffffff', weight: 2, dashArray: '4, 4', fillColor: colorFondo, fillOpacity: 0.6
+                        color: '#ffffff', weight: 2, dashArray: '4, 4', fillColor: colorFondo, fillOpacity: 0.65
                     }).addTo(map);
 
                     if (numLote !== "") {
                         let centro = poligono.getBounds().getCenter();
-                        let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [24, 24], iconAnchor: [12, 12] });
+                        let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [28, 22], iconAnchor: [14, 11] });
                         L.marker(centro, {icon: iconoNumero}).addTo(map);
                     }
                 }
             });
 
             if(todosLosPuntos.length > 0) {
-                map.fitBounds(L.latLngBounds(todosLosPuntos));
+                map.fitBounds(L.latLngBounds(todosLosPuntos), { padding: [50, 50] });
             }
         }
 
