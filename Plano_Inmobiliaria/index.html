@@ -2,335 +2,188 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gestor Inmobiliario Premium GPS</title>
-    
-    <!-- Fuentes y SDKs de Firebase -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
-    <!-- PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Leaflet CSS (Mapa GPS) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urbanización Sapucai - Lotes</title>
+    <!-- CSS de Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
     <style>
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: #1e1e1e; color: white; display: flex; height: 100dvh; overflow: hidden; }
+        body { margin: 0; padding: 0; display: flex; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f7; }
         
-        /* LOGIN */
-        #pantallaLogin { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .login-box { background: #2c3e50; padding: 30px; border-radius: 12px; text-align: center; width: 90%; max-width: 320px; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
-        .login-input-group { position: relative; width: 100%; margin: 15px 0; }
-        .login-box input { width: 100%; padding: 12px 40px 12px 12px; box-sizing: border-box; border: none; border-radius: 6px; font-size: 16px; font-family: 'Montserrat'; }
-        .btn-ojo { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #555; padding: 0; }
-        .login-box button.btn-ingresar { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; font-family: 'Montserrat'; }
-        .login-box button.btn-ingresar:hover { background: #219150; }
-
-        /* PANEL MAPA */
-        #panelMapa { width: 75%; height: 100vh; position: relative; background: #111; }
+        #map { width: 70%; height: 100vh; }
         
-        /* PANEL CONTROL */
-        .panel-control { width: 25%; padding: 20px; background: #2c3e50; display: flex; flex-direction: column; z-index: 1000; box-shadow: -5px 0 15px rgba(0,0,0,0.5); box-sizing: border-box; overflow-y: auto; }
-        h2 { color: #2ecc71; margin-top: 0; font-weight: 700; }
-        .stats { background: #34495e; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        #panel { width: 30%; background: white; padding: 30px; box-sizing: border-box; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; }
         
-        /* LEYENDA */
-        .leyenda { display: flex; gap: 10px; font-size: 12px; margin-bottom: 10px; flex-wrap: wrap; }
-        .punto { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-        .p-verde { background: #2ecc71; } .p-rojo { background: #e74c3c; } .p-azul { background: #3498db; } .p-amarillo { background: #f1c40f; }
-
-        /* BOTONES */
-        .btn-modificar { display: none; width: 100%; padding: 12px; margin-top: 15px; background: #f39c12; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Montserrat'; transition: 0.3s;}
-        .btn-modificar:hover { background: #e67e22; }
-        .btn-pdf { display: none; width: 100%; padding: 12px; margin-top: 15px; background: #8e44ad; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Montserrat'; transition: 0.3s; box-shadow: 0 4px 10px rgba(142, 68, 173, 0.4);}
-        .btn-pdf:hover { background: #732d91; }
-
-        /* MODAL ELEGANTE */
-        #modalEdicion { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: none; justify-content: center; align-items: center; }
-        .modal-box { background: #ecf0f1; color: #2c3e50; padding: 25px; border-radius: 12px; width: 90%; max-width: 350px; text-align: left; }
-        .modal-box h3 { margin-top: 0; color: #2980b9; }
-        .modal-box label { font-size: 13px; font-weight: 600; margin-top: 10px; display: block; }
-        .modal-box input { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 6px; font-family: 'Montserrat'; }
+        h1 { color: #2c3e50; font-size: 1.8rem; margin-top: 0; }
+        p { color: #7f8c8d; line-height: 1.6; }
         
-        .modal-botones { display: flex; gap: 10px; justify-content: flex-end; }
-        .btn-guardar { background: #27ae60; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .btn-cancelar { background: #95a5a6; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .btn-liberar { background: #e74c3c; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: none; width: 100%; margin-bottom: 10px;}
-        .btn-recuperar { background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: none; width: 100%; margin-bottom: 10px;}
+        .leyenda { background: #f8f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e8e8; }
+        .leyenda-item { display: flex; align-items: center; margin-bottom: 10px; font-weight: bold; color: #34495e; }
+        .caja-color { width: 20px; height: 20px; margin-right: 10px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.2); }
+        .color-libre { background: #2ecc71; }
+        .color-vendido { background: #e74c3c; }
+        .color-verde { background: #27ae60; }
+        
+        .btn-maps { display: block; width: 100%; background: #4285F4; color: white; text-align: center; padding: 15px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; margin-top: 10px; transition: 0.3s; box-sizing: border-box; }
+        .btn-maps:hover { background: #3367d6; box-shadow: 0 4px 8px rgba(66, 133, 244, 0.4); }
+        
+        .btn-whatsapp { display: block; width: 100%; background: #25D366; color: white; text-align: center; padding: 15px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; transition: 0.3s; box-sizing: border-box; }
+        .btn-whatsapp:hover { background: #1ebe57; box-shadow: 0 4px 8px rgba(37, 211, 102, 0.4); }
 
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            #panelMapa { width: 100%; height: 55dvh; }
-            .panel-control { width: 100%; height: 45dvh; padding-bottom: 40px; }
-        }
+        /* Vuelve el círculo blanco limpio solo con el número */
+        .etiqueta-lote { background-color: white; border-radius: 50%; color: #333; font-weight: bold; text-align: center; line-height: 24px; width: 24px !important; height: 24px !important; border: 1px solid #333; font-size: 12px; box-shadow: 1px 1px 4px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN -->
-    <div id="pantallaLogin">
-        <div class="login-box">
-            <h3>🔑 Acceso al Sistema</h3>
-            <p style="font-size: 12px; color: #bdc3c7;">Ingrese su clave de Vendedor o Administrador.</p>
-            <div class="login-input-group">
-                <input type="password" id="txtPassword" placeholder="Contraseña">
-                <button type="button" class="btn-ojo" onclick="alternarPassword()">👁️</button>
-            </div>
-            <button class="btn-ingresar" onclick="verificarLicencia()">Ingresar</button>
-            <p id="errorLogin" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Contraseña incorrecta.</p>
-        </div>
-    </div>
+    <div id="map"></div>
 
-    <!-- MODAL DE REGISTRO DE VENTA -->
-    <div id="modalEdicion">
-        <div class="modal-box">
-            <h3 id="modalTitulo">Registrar Venta</h3>
-            <button id="btnRecuperarLote" class="btn-recuperar" onclick="marcarRecuperado()">🔵 Marcar como Recuperado</button>
-            <button id="btnLiberarLote" class="btn-liberar" onclick="liberarLote()">❌ Anular Venta (Limpiar a Verde)</button>
-            <div id="formularioVenta">
-                <label>Nombre del Vendedor:</label>
-                <input type="text" id="inVendedor" placeholder="Ej: Juan Pérez">
-                <label>Nombre del Cliente:</label>
-                <input type="text" id="inCliente" placeholder="Ej: María Gómez">
-                <label>Cédula de Identidad (C.I):</label>
-                <input type="text" id="inCI" placeholder="Ej: 4.555.666">
-            </div>
-            <div class="modal-botones">
-                <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-                <button id="btnGuardarVenta" class="btn-guardar" onclick="guardarVenta()">Confirmar Venta</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAPA GPS -->
-    <div id="panelMapa"></div>
-
-    <!-- PANEL DE CONTROL -->
-    <div class="panel-control">
-        <h2>Gestor Inmobiliario</h2>
-        <div class="leyenda">
-            <span><i class="punto p-verde"></i>Disponible</span>
-            <span><i class="punto p-rojo"></i>Vendido</span>
-            <span><i class="punto p-azul"></i>Recuperado</span>
-            <span><i class="punto p-amarillo"></i>Selección</span>
-        </div>
-        <div class="stats">
-            <h4>Información del Terreno</h4>
-            <p id="infoSeleccion" style="line-height: 1.6; font-size: 14px;">Aún no se ha seleccionado ningún lote.</p>
-            <button id="btnEditar" class="btn-modificar" onclick="abrirModal()">✏️ Modificar Estado</button>
-        </div>
-        <button id="btnReporte" class="btn-pdf" onclick="generarPDF()">📊 Descargar Balance PDF</button>
-    </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        // CONFIGURACIÓN FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyAg6rZnqUFgTcRiAHA0AWvYR-imovVb_0s",
-            authDomain: "gestorinmobiliario-d68b3.firebaseapp.com",
-            databaseURL: "https://gestorinmobiliario-d68b3-default-rtdb.firebaseio.com",
-            projectId: "gestorinmobiliario-d68b3",
-            storageBucket: "gestorinmobiliario-d68b3.firebasestorage.app",
-            messagingSenderId: "927434078075",
-            appId: "1:927434078075:web:95bd3c4e6720bcd282afde"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // --- SISTEMA DE LOGIN ---
-        window.addEventListener("DOMContentLoaded", () => {
-            let rolActual = sessionStorage.getItem("rol_usuario");
-            if (rolActual) {
-                document.getElementById("pantallaLogin").style.display = "none";
-                if(rolActual === "admin") { document.getElementById("btnReporte").style.display = "block"; }
-            }
-        });
-
-        function verificarLicencia() {
-            let pass = document.getElementById("txtPassword").value;
-            if (pass === "admin1234") { 
-                sessionStorage.setItem("rol_usuario", "admin");
-                document.getElementById("pantallaLogin").style.display = "none";
-                document.getElementById("btnReporte").style.display = "block";
-            } else if (pass === "inmo1234") { 
-                sessionStorage.setItem("rol_usuario", "vendedor");
-                document.getElementById("pantallaLogin").style.display = "none";
-            } else {
-                document.getElementById("errorLogin").style.display = "block";
-            }
-        }
-
-        function alternarPassword() {
-            let input = document.getElementById("txtPassword");
-            input.type = input.type === "password" ? "text" : "password";
-        }
-
-        // --- INICIALIZAR MAPA GPS ---
-        const mapa = L.map('panelMapa').setView([-25.665706, -56.937467], 17);
-        L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-            maxZoom: 21, subdomains:['mt0','mt1','mt2','mt3']
-        }).addTo(mapa);
-
-        let lotesGPS = {}; // Aquí guardamos los polígonos dibujados
-        let loteActivoSeleccionado = null; 
-        let datosVentasGlobales = {}; 
-
-        // FUNCIÓN PARA CREAR LOTES DESDE COORDENADAS
-        function crearLote(idLote, coordenadas) {
-            let poligono = L.polygon(coordenadas, {
-                color: '#2ecc71', fillColor: '#2ecc71', fillOpacity: 0.5, weight: 2
-            }).addTo(mapa);
-            
-            poligono.on('click', function() {
-                gestionarLote(idLote, poligono);
-            });
-            lotesGPS[idLote] = poligono;
-        }
-
-        // --- ⬇️ TUS LOTES GPS VAN AQUÍ ⬇️ ---
-        // (Este es un lote de prueba para que veas cómo funciona el GPS hoy mismo)
-        crearLote("Lote_Prueba_1", [[-25.6655, -56.9376], [-25.6655, -56.9374], [-25.6658, -56.9374], [-25.6658, -56.9376]]);
+    <div id="panel">
+        <h1>Loteamiento Sapucai</h1>
+        <p>Descubre tu próximo terreno. Contamos con lotes con posesión inmediata, rodeados de naturaleza y con excelente ubicación estratégica.</p>
         
+        <div class="leyenda">
+            <div class="leyenda-item">
+                <div class="caja-color color-libre"></div> Lotes Disponibles
+            </div>
+            <div class="leyenda-item">
+                <div class="caja-color color-vendido"></div> Lotes Vendidos
+            </div>
+            <div class="leyenda-item">
+                <div class="caja-color color-verde"></div> Espacios Verdes
+            </div>
+        </div>
 
-        // --- LÓGICA DE GESTIÓN Y ESTADOS ---
-        function gestionarLote(idLote, poligonoLeaflet) {
-            // Quitar selección visual a todos
-            for(let id in lotesGPS) {
-                let p = lotesGPS[id];
-                p.setStyle({ weight: 2, dashArray: null });
-            }
-            // Resaltar el seleccionado
-            poligonoLeaflet.setStyle({ weight: 4, dashArray: '5, 5', color: '#f1c40f' });
-            loteActivoSeleccionado = idLote;
-            actualizarPanelLateral(idLote);
-        }
+        <a href="https://www.google.com/maps/search/?api=1&query=-25.668092,-56.938836" target="_blank" class="btn-maps">
+            📍 Abrir en Google Maps
+        </a>
+        
+        <a href="https://wa.me/595900000000?text=Hola,%20me%20interesa%20un%20lote%20en%20Sapucai" target="_blank" class="btn-whatsapp">
+            💬 Consultar Disponibilidad
+        </a>
+    </div>
 
-        function actualizarPanelLateral(idLote) {
-            let datos = datosVentasGlobales[idLote] || { estado: "disponible" };
-            let nombreVisible = idLote.replace(/_/g, ' '); 
-            
-            if(datos.estado === "vendido") {
-                document.getElementById("infoSeleccion").innerHTML = `
-                    <b>📌 ${nombreVisible}</b><br><br>
-                    <b>Estado:</b> <span style="color:#e74c3c">Vendido 🔴</span><br>
-                    <b>Vendedor:</b> ${datos.vendedor}<br>
-                    <b>Cliente:</b> ${datos.cliente}<br>
-                    <b>C.I.:</b> ${datos.ci}<br>
-                    <span style="font-size:11px; color:#bdc3c7;">📅 Registrado: ${datos.fecha}</span>`;
-            } else if(datos.estado === "recuperado") {
-                document.getElementById("infoSeleccion").innerHTML = `
-                    <b>📌 ${nombreVisible}</b><br><br>
-                    <b>Estado:</b> <span style="color:#3498db">Recuperado 🔵</span><br>
-                    <span style="font-size:11px; color:#bdc3c7;">Listo para venderse nuevamente.</span>`;
-            } else {
-                document.getElementById("infoSeleccion").innerHTML = `
-                    <b>📌 ${nombreVisible}</b><br><br>
-                    <b>Estado:</b> <span style="color:#2ecc71">Disponible 🟢</span><br>
-                    <span style="font-size:11px; color:#bdc3c7;">Listo para la venta.</span>`;
-            }
-            document.getElementById("btnEditar").style.display = "block";
-        }
+    <!-- JS de Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map');
+        L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 21, attribution: '© Google'
+        }).addTo(map);
 
-        function abrirModal() {
-            if (!loteActivoSeleccionado) return;
-            let datos = datosVentasGlobales[loteActivoSeleccionado] || { estado: "disponible" };
-            let nombreLote = loteActivoSeleccionado.replace(/_/g, ' ');
-            
-            document.getElementById("modalEdicion").style.display = "flex";
-            
-            if(datos.estado === "vendido") {
-                document.getElementById("modalTitulo").innerText = `Gestionar: ${nombreLote}`;
-                document.getElementById("formularioVenta").style.display = "none";
-                document.getElementById("btnGuardarVenta").style.display = "none";
-                document.getElementById("btnRecuperarLote").style.display = "block"; 
-                document.getElementById("btnLiberarLote").style.display = "block";  
-            } else {
-                document.getElementById("modalTitulo").innerText = `Vender: ${nombreLote}`;
-                document.getElementById("formularioVenta").style.display = "block";
-                document.getElementById("btnGuardarVenta").style.display = "inline-block";
-                document.getElementById("btnRecuperarLote").style.display = "none";
-                document.getElementById("btnLiberarLote").style.display = "none";
+        const textoCoordenadas = `
+// Manzana_1_Lote_1 (LIBRE)
+P1: -25.668092, -56.938836
+P2: -25.668149, -56.938577
+P3: -25.667981, -56.938516
+P4: -25.667924, -56.938774
+
+// Manzana_1_Lote_2 (LIBRE)
+P1: -25.667924, -56.938774
+P2: -25.667755, -56.938713
+P3: -25.667810, -56.938455
+P4: -25.667981, -56.938516
+
+// Manzana_1_Lote_3 (LIBRE)
+P1: -25.668166, -56.938499
+P2: -25.667938, -56.938417
+P3: -25.667984, -56.938211
+P4: -25.668214, -56.938287
+
+// Manzana_1_Lote_4 (LIBRE)
+P1: -25.667709, -56.938333
+P2: -25.667938, -56.938417
+P3: -25.667984, -56.938211
+P4: -25.667752, -56.938132
+
+// Manzana_1_Lote_5 (LIBRE)
+P1: -25.668236, -56.938181
+P2: -25.668007, -56.938103
+P3: -25.668054, -56.937895
+P4: -25.668284, -56.937968
+
+// Manzana_1_Lote_6 (LIBRE)
+P1: -25.667777, -56.938023
+P2: -25.667820, -56.937820
+P3: -25.668054, -56.937895
+P4: -25.668007, -56.938103
+
+// Manzana_1_Lote_7 (LIBRE)
+P1: -25.668128, -56.937838
+P2: -25.668298, -56.937893
+P3: -25.668355, -56.937635
+P4: -25.668186, -56.937579
+
+// Manzana_1_Lote_8 (LIBRE)
+P1: -25.667956, -56.937783
+P2: -25.668128, -56.937838
+P3: -25.668186, -56.937579
+P4: -25.668014, -56.937525
+
+// Manzana_1_Lote_9 (LIBRE)
+P1: -25.667956, -56.937783
+P2: -25.667784, -56.937729
+P3: -25.667840, -56.937468
+P4: -25.668014, -56.937525
+
+// Manzana_1_Lote_10 (LIBRE)
+P1: -25.667784, -56.937729
+P2: -25.667612, -56.937673
+P3: -25.667669, -56.937413
+P4: -25.667840, -56.937468
+
+// Manzana_1_Lote_11 (LIBRE)
+P1: -25.667820, -56.937820
+P2: -25.667777, -56.938023
+P3: -25.667535, -56.937942
+P4: -25.667580, -56.937747
+        `;
+
+        function dibujarLotesParaCliente(texto) {
+            let bloques = texto.split('//').filter(b => b.trim() !== '');
+            let todosLosPuntos = []; 
+
+            bloques.forEach(bloque => {
+                let lineas = bloque.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+                if (lineas.length === 0) return;
+
+                let titulo = lineas[0];
+                let estado = titulo.includes('VENDIDO') ? 'vendido' : (titulo.includes('VERDE') ? 'verde' : 'libre');
                 
-                document.getElementById("inVendedor").value = "";
-                document.getElementById("inCliente").value = "";
-                document.getElementById("inCI").value = "";
-            }
-        }
+                let numeroMatch = titulo.match(/Lote_(\d+)/i) || titulo.match(/(\d+)/);
+                let numLote = numeroMatch ? numeroMatch[1] : "";
 
-        function cerrarModal() { document.getElementById("modalEdicion").style.display = "none"; }
+                let puntos = [];
+                for(let i = 1; i < lineas.length; i++) {
+                    if(lineas[i].match(/^P\d+:/)) {
+                        let coords = lineas[i].split(':')[1].split(',');
+                        let lat = parseFloat(coords[0]);
+                        let lng = parseFloat(coords[1]);
+                        puntos.push([lat, lng]);
+                        todosLosPuntos.push([lat, lng]);
+                    }
+                }
 
-        function guardarVenta() {
-            let vend = document.getElementById("inVendedor").value.trim();
-            let cli = document.getElementById("inCliente").value.trim();
-            let ci = document.getElementById("inCI").value.trim();
+                if (puntos.length >= 3) {
+                    let colorFondo = estado === 'vendido' ? '#e74c3c' : (estado === 'verde' ? '#27ae60' : '#2ecc71');
 
-            if(!vend || !cli || !ci) { alert("Complete todos los campos."); return; }
+                    let poligono = L.polygon(puntos, {
+                        color: '#ffffff', weight: 2, dashArray: '4, 4', fillColor: colorFondo, fillOpacity: 0.6
+                    }).addTo(map);
 
-            db.ref('ventas_lotes/' + loteActivoSeleccionado).set({
-                estado: "vendido", vendedor: vend, cliente: cli, ci: ci, fecha: new Date().toLocaleString('es-PY')
+                    if (numLote !== "") {
+                        let centro = poligono.getBounds().getCenter();
+                        let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [24, 24], iconAnchor: [12, 12] });
+                        L.marker(centro, {icon: iconoNumero}).addTo(map);
+                    }
+                }
             });
-            cerrarModal();
-        }
 
-        function marcarRecuperado() {
-            if(confirm("¿Marcar como RECUPERADO?")) {
-                db.ref('ventas_lotes/' + loteActivoSeleccionado).set({ estado: "recuperado" });
-                cerrarModal();
+            if(todosLosPuntos.length > 0) {
+                map.fitBounds(L.latLngBounds(todosLosPuntos));
             }
         }
 
-        function liberarLote() {
-            if(confirm("¿Anular venta y devolverlo a DISPONIBLE?")) {
-                db.ref('ventas_lotes/' + loteActivoSeleccionado).remove();
-                cerrarModal();
-            }
-        }
-
-        // --- SINCRONIZACIÓN FIREBASE -> MAPA GPS ---
-        db.ref('ventas_lotes').on('value', (snapshot) => {
-            datosVentasGlobales = snapshot.val() || {};
-            
-            // Recorremos todos los lotes del GPS y los pintamos según la base de datos
-            for(let idLote in lotesGPS) {
-                let poligono = lotesGPS[idLote];
-                let datos = datosVentasGlobales[idLote];
-                
-                if (datos && datos.estado === "vendido") {
-                    poligono.setStyle({ color: '#e74c3c', fillColor: '#e74c3c' });
-                } else if (datos && datos.estado === "recuperado") {
-                    poligono.setStyle({ color: '#3498db', fillColor: '#3498db' });
-                } else {
-                    poligono.setStyle({ color: '#2ecc71', fillColor: '#2ecc71' });
-                }
-            }
-            if (loteActivoSeleccionado) { actualizarPanelLateral(loteActivoSeleccionado); }
-        });
-
-        // --- PDF ---
-        function generarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFont("helvetica", "bold"); doc.setFontSize(18);
-            doc.text("Balance Inmobiliario - Reporte de Ventas", 14, 20);
-            doc.setFontSize(11); doc.setFont("helvetica", "normal");
-            doc.text(`Generado el: ${new Date().toLocaleString('es-PY')}`, 14, 28);
-
-            let filas = [];
-            for (let idLote in datosVentasGlobales) {
-                let datos = datosVentasGlobales[idLote];
-                if(datos.estado === "vendido") {
-                    filas.push([ idLote.replace(/_/g, ' '), datos.vendedor || "-", datos.cliente || "-", datos.ci || "-", datos.fecha || "-" ]);
-                }
-            }
-            if(filas.length === 0) { alert("No hay ventas registradas."); return; }
-            doc.autoTable({ startY: 35, head: [['Terreno', 'Vendedor', 'Cliente', 'C.I.', 'Fecha y Hora']], body: filas, theme: 'grid', headStyles: { fillColor: [44, 62, 80] } });
-            doc.save("Balance_Ventas_Inmobiliaria.pdf");
-        }
-    </script> 
+        dibujarLotesParaCliente(textoCoordenadas);
+    </script>
 </body>
 </html>
