@@ -19,14 +19,14 @@
             --text-muted: #64748b;
         }
 
-        body { margin: 0; padding: 0; display: flex; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0f172a; color: var(--text-main); }
+        body { margin: 0; padding: 0; display: flex; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0f172a; color: var(--text-main); height: 100vh; overflow: hidden; }
         
         #map { width: 72%; height: 100vh; }
         
         #panel { 
             width: 28%; 
             background: var(--bg-panel); 
-            padding: 35px 25px; 
+            padding: 30px 20px; 
             box-sizing: border-box; 
             overflow-y: auto; 
             box-shadow: -10px 0 30px rgba(0,0,0,0.15); 
@@ -36,48 +36,45 @@
             justify-content: space-between;
         }
         
-        .header-proyecto h1 { color: var(--primary); font-size: 1.5rem; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
-        .header-proyecto p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.5; margin-bottom: 25px; }
+        .header-proyecto h1 { color: var(--primary); font-size: 1.4rem; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+        .header-proyecto p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.4; margin-bottom: 20px; }
         
-        /* Leyenda moderna */
-        .leyenda { background: #f8fafc; padding: 18px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
-        .leyenda-titulo { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; display: block; }
-        .leyenda-item { display: flex; align-items: center; margin-bottom: 10px; font-weight: 600; font-size: 0.885rem; color: var(--primary); }
+        .leyenda { background: #f8fafc; padding: 14px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .leyenda-titulo { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; display: block; }
+        .leyenda-item { display: flex; align-items: center; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--primary); }
         .leyenda-item:last-child { margin-bottom: 0; }
-        .caja-color { width: 16px; height: 16px; margin-right: 12px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .caja-color { width: 14px; height: 14px; margin-right: 10px; border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
         .color-libre { background: #10b981; }
         .color-vendido { background: #ef4444; }
         .color-verde { background: #059669; } 
         .color-recuperado { background: #2563eb; } 
         
-        /* Botones de acción profesionales */
-        .acciones-container { margin-top: auto; padding-top: 20px; }
+        .acciones-container { margin-top: auto; padding-top: 15px; }
         
         .btn { 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 10px;
+            gap: 8px;
             width: 100%; 
-            padding: 14px; 
+            padding: 12px; 
             text-decoration: none; 
-            border-radius: 10px; 
+            border-radius: 8px; 
             font-weight: 700; 
-            font-size: 0.95rem; 
-            margin-bottom: 12px; 
+            font-size: 0.9rem; 
+            margin-bottom: 10px; 
             transition: all 0.2s ease; 
             box-sizing: border-box; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
         
         .btn-maps { background: #ffffff; color: var(--primary); border: 2px solid #e2e8f0; }
-        .btn-maps:hover { background: #f8fafc; border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+        .btn-maps:hover { background: #f8fafc; border-color: var(--accent); color: var(--accent); }
         
         .btn-whatsapp { background: #22c55e; color: white; border: none; }
-        .btn-whatsapp:hover { background: #16a34a; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(34, 197, 94, 0.25); }
+        .btn-whatsapp:hover { background: #16a34a; }
 
-        /* Etiquetas minimalistas sobre el mapa */
         .etiqueta-lote { 
             background: rgba(15, 23, 42, 0.85); 
             backdrop-filter: blur(4px);
@@ -93,7 +90,16 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
         }
 
-        .footer-marca { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 20px; }
+        .footer-marca { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; }
+
+        /* ADAPTACIÓN AUTOMÁTICA PARA CELULARES */
+        @media (max-width: 768px) {
+            body { flex-direction: column-reverse; }
+            #map { width: 100%; height: 55vh; }
+            #panel { width: 100%; height: 45vh; padding: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); }
+            .header-proyecto p { display: none; } /* Oculta texto largo en celu para ahorrar espacio */
+            .leyenda { margin-bottom: 10px; padding: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -103,7 +109,7 @@
     <div id="panel">
         <div class="header-proyecto">
             <h1>Loteamiento Sapucai</h1>
-            <p>Selecciona y descubre tu próximo terreno. Espacios ideales con posesión inmediata y alta proyección de valor.</p>
+            <p>Descubre tu próximo terreno con posesión inmediata.</p>
             
             <div class="leyenda">
                 <span class="leyenda-titulo">Estado de los Lotes</span>
@@ -145,7 +151,6 @@
             maxZoom: 21, attribution: '© Google Maps'
         }).addTo(map);
 
-        // TUS NUEVAS COORDENADAS ACTUALIZADAS
         const textoCoordenadas = `
 // Manzana_1_Lote_1 (LIBRE)
 P1: -25.668092, -56.938836
@@ -243,10 +248,10 @@ P4: -25.668356, -56.937638
                 }
 
                 if (puntos.length >= 3) {
-                    let colorFondo = '#10b981'; // Libre (Esmeralda)
-                    if (estado === 'vendido') colorFondo = '#ef4444'; // Vendido (Rojo)
-                    else if (estado === 'verde') colorFondo = '#059669'; // Verde Bosque
-                    else if (estado === 'recuperado') colorFondo = '#2563eb'; // Azul Recuperado
+                    let colorFondo = '#10b981'; 
+                    if (estado === 'vendido') colorFondo = '#ef4444'; 
+                    else if (estado === 'verde') colorFondo = '#059669'; 
+                    else if (estado === 'recuperado') colorFondo = '#2563eb'; 
 
                     let poligono = L.polygon(puntos, {
                         color: '#ffffff', weight: 2, dashArray: '4, 4', fillColor: colorFondo, fillOpacity: 0.65
@@ -261,7 +266,7 @@ P4: -25.668356, -56.937638
             });
 
             if(todosLosPuntos.length > 0) {
-                map.fitBounds(L.latLngBounds(todosLosPuntos), { padding: [50, 50] });
+                map.fitBounds(L.latLngBounds(todosLosPuntos), { padding: [30, 30] });
             }
         }
 
