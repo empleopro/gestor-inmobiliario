@@ -92,12 +92,12 @@
 
         .footer-marca { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; }
 
-        /* ADAPTACIÓN AUTOMÁTICA PARA CELULARES */
+        /* ADAPTACIÓN CELULAR: MAPA ARRIBA (55%), DATOS ABAJO (45%) */
         @media (max-width: 768px) {
-            body { flex-direction: column-reverse; }
+            body { flex-direction: column; }
             #map { width: 100%; height: 55vh; }
             #panel { width: 100%; height: 45vh; padding: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); }
-            .header-proyecto p { display: none; } /* Oculta texto largo en celu para ahorrar espacio */
+            .header-proyecto p { display: none; } 
             .leyenda { margin-bottom: 10px; padding: 10px; }
         }
     </style>
@@ -133,7 +133,8 @@
                 📍 Ver Ubicación en GPS
             </a>
             
-            <a href="https://wa.me/595900000000?text=Hola,%20me%20interesa%20obtener%20más%20información%20sobre%20los%20lotes%20en%20Sapucai" target="_blank" class="btn btn-whatsapp">
+            <!-- WhatsApp vinculado al número exacto del propietario -->
+            <a href="https://wa.me/595985480685?text=Hola,%20me%20interesa%20obtener%20más%20información%20sobre%20los%20lotes%20en%20Sapucai" target="_blank" class="btn btn-whatsapp">
                 💬 Consultar por WhatsApp
             </a>
             
