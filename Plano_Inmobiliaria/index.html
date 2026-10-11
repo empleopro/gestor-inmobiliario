@@ -92,7 +92,6 @@
 
         .footer-marca { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; }
 
-        /* ADAPTACIÓN CELULAR: MAPA ARRIBA (55%), DATOS ABAJO (45%) */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             #map { width: 100%; height: 55vh; }
@@ -129,11 +128,12 @@
         </div>
 
         <div class="acciones-container">
-            <a href="https://www.google.com/maps/search/?api=1&query=-25.668092,-56.938836" target="_blank" class="btn btn-maps">
+            <!-- GPS actualizado con la nueva coordenada exacta de la captura -->
+            <a href="https://www.google.com/maps/search/?api=1&query=-25.665706,-56.937467" target="_blank" class="btn btn-maps">
                 📍 Ver Ubicación en GPS
             </a>
             
-            <!-- WhatsApp vinculado al número exacto del propietario -->
+            <!-- WhatsApp vinculado al número del propietario -->
             <a href="https://wa.me/595985480685?text=Hola,%20me%20interesa%20obtener%20más%20información%20sobre%20los%20lotes%20en%20Sapucai" target="_blank" class="btn btn-whatsapp">
                 💬 Consultar por WhatsApp
             </a>
