@@ -4,83 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapeador GPS de Precisión</title>
-    <!-- CSS de Leaflet para el mapa -->
+    <!-- CSS de Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { margin: 0; padding: 0; display: flex; font-family: sans-serif; background: #1a1a1a; }
-        
-        /* Contenedor del mapa a la izquierda */
         #map { width: 75%; height: 100vh; cursor: crosshair; }
-        
-        /* Contenedor del panel a la derecha */
         #panel { width: 25%; padding: 20px; background: #2c3e50; color: white; height: 100vh; box-sizing: border-box; overflow-y: auto; border-left: 2px solid #34495e; }
         
         h2 { color: #2ecc71; margin-top: 0; font-size: 1.2rem; }
-        label { display: block; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
-        input[type="range"], input[type="text"], input[type="number"], select { width: 100%; margin-top: 5px; }
-        input[type="text"], input[type="number"], select { padding: 8px; border-radius: 4px; border: none; box-sizing: border-box; font-size: 14px; }
+        label { display: block; margin-top: 10px; font-size: 0.85rem; font-weight: bold; }
+        input[type="range"], input[type="text"], select { width: 100%; margin-top: 5px; }
+        input[type="text"], select { padding: 8px; border-radius: 4px; border: none; box-sizing: border-box; font-size: 14px; }
         
-        button { width: 100%; padding: 10px; margin-top: 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button { width: 100%; padding: 10px; margin-top: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #2980b9; }
-        #btnDeshacer { background: #34495e; width: 48%; float: left; margin-top: 10px; }
-        #btnBorrar { background: #e74c3c; width: 48%; float: right; margin-top: 10px; }
+        #btnDeshacer { background: #34495e; width: 48%; float: left; }
+        #btnBorrar { background: #e74c3c; width: 48%; float: right; }
+        #btnCentrarPlano { background: #9b59b6; margin-top: 5px; margin-bottom: 10px;}
+        #btnCentrarPlano:hover { background: #8e44ad; }
         .clearfix::after { content: ""; clear: both; display: table; }
         
         #resultados { margin-top: 20px; background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; min-height: 150px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; max-height: 200px; }
         
-        /* ESTILO: Círculo blanco para el número del lote */
-        .etiqueta-lote {
-            background-color: white;
-            border-radius: 50%;
-            color: #333;
-            font-weight: bold;
-            text-align: center;
-            line-height: 24px;
-            width: 24px !important;
-            height: 24px !important;
-            border: 1px solid #333;
-            font-size: 12px;
-            box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-        }
-
-        /* Mira de francotirador central */
-        .mira-centro {
-            position: absolute; top: 50%; left: 37.5%; transform: translate(-50%, -50%);
-            width: 20px; height: 20px; pointer-events: none; z-index: 1000;
-        }
+        .etiqueta-lote { background-color: white; border-radius: 50%; color: #333; font-weight: bold; text-align: center; line-height: 24px; width: 24px !important; height: 24px !important; border: 1px solid #333; font-size: 12px; box-shadow: 1px 1px 4px rgba(0,0,0,0.5); }
+        .mira-centro { position: absolute; top: 50%; left: 37.5%; transform: translate(-50%, -50%); width: 20px; height: 20px; pointer-events: none; z-index: 1000; }
         .mira-centro::before, .mira-centro::after { content: ''; position: absolute; background: red; }
         .mira-centro::before { top: 9px; left: 0; width: 20px; height: 2px; }
         .mira-centro::after { top: 0; left: 9px; width: 2px; height: 20px; }
     </style>
 </head>
 <body>
-
-    <!-- MAPA Y MIRA -->
     <div id="map"></div>
     <div class="mira-centro"></div>
     
-    <!-- PANEL DERECHO -->
     <div id="panel">
         <h2>Mapeador GPS de Precisión</h2>
-        <p style="font-size: 0.8rem; color: #bdc3c7;">
-            1. Usa la rotación para calzar el plano.<br>
-            2. Bloquea el plano para no moverlo por error.<br>
-            3. Haz 4 clics en las esquinas para marcar un lote.
-        </p>
 
-        <label>Transparencia del Plano:</label>
-        <input type="range" id="transparencia" min="0" max="1" step="0.05" value="0.7">
+        <!-- NUEVOS CONTROLES DE TAMAÑO Y POSICIÓN -->
+        <button id="btnCentrarPlano">📍 Traer plano aquí (al centro)</button>
+        
+        <label>Ancho del Plano (Escala X):</label>
+        <input type="range" id="anchoPlano" min="0.001" max="0.05" step="0.0001" value="0.008">
+
+        <label>Alto del Plano (Escala Y):</label>
+        <input type="range" id="altoPlano" min="0.001" max="0.05" step="0.0001" value="0.008">
 
         <label>Rotación del Plano (º):</label>
         <input type="range" id="rotacion" min="-180" max="180" step="0.5" value="0">
 
+        <label>Transparencia del Plano:</label>
+        <input type="range" id="transparencia" min="0" max="1" step="0.05" value="0.7">
+
         <button id="btnBloquear">Bloquear / Fijar Plano</button>
+        <hr style="border: 1px solid #34495e; margin: 15px 0;">
 
         <label>Prefijo del Lote:</label>
         <input type="text" id="prefijoLote" value="Manzana_1_Lote_">
 
-        <label>Número de Lote (Automático):</label>
-        <input type="number" id="numeroLote" value="1">
+        <label>Número de Lote (Vacío = Sin número):</label>
+        <input type="text" id="numeroLote" value="1">
 
         <label>Estado del Terreno:</label>
         <select id="estadoLote">
@@ -89,7 +71,7 @@
             <option value="verde">Espacio Verde (Verde oscuro)</option>
         </select>
 
-        <h3 style="margin-top: 20px; font-size: 1rem; color: #f1c40f;" id="estadoClics">Mapeando: Lote 1 (Clic 1/4)</h3>
+        <h3 style="margin-top: 15px; font-size: 0.9rem; color: #f1c40f;" id="estadoClics">Mapeando: Lote 1 (Clic 1/4)</h3>
         
         <div class="clearfix">
             <button id="btnDeshacer">Deshacer Clic</button>
@@ -102,28 +84,51 @@
     <!-- JS de Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 1. INICIALIZAR MAPA (Ajusta estas coordenadas -25.7, -56.9 a las del terreno en Sapucai si necesitas)
-        const map = L.map('map').setView([-25.7, -56.9], 16); 
+        // 1. INICIALIZAR MAPA EN SAPUCAI
+        let centroInicial = L.latLng(-25.6644, -56.9602);
+        const map = L.map('map').setView(centroInicial, 16); 
         
-        // 2. CAPA SATELITAL GOOGLE
         L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
             maxZoom: 21,
             attribution: '© Google'
         }).addTo(map);
 
-        // 3. CARGAR EL PLANO.JPG (Ajusta los puntos boundsPlano para que encaje mejor al iniciar)
-        let boundsPlano = [[-25.705, -56.905], [-25.695, -56.895]]; 
-        let planoOverlay = L.imageOverlay('plano.jpg', boundsPlano, {
+        // 2. CONFIGURACIÓN DEL PLANO (TAMAÑO Y POSICIÓN)
+        let centroPlano = centroInicial;
+        
+        function obtenerLimites() {
+            let ancho = parseFloat(document.getElementById('anchoPlano').value);
+            let alto = parseFloat(document.getElementById('altoPlano').value);
+            return [
+                [centroPlano.lat - alto, centroPlano.lng - ancho],
+                [centroPlano.lat + alto, centroPlano.lng + ancho]
+            ];
+        }
+
+        let planoOverlay = L.imageOverlay('plano.jpg', obtenerLimites(), {
             opacity: 0.7,
             interactive: true
         }).addTo(map);
 
-        // 4. TRANSPARENCIA
+        // Actualizar tamaño en tiempo real
+        function actualizarTamanio() {
+            planoOverlay.setBounds(obtenerLimites());
+            aplicarRotacion(); // Mantener rotación al cambiar tamaño
+        }
+        document.getElementById('anchoPlano').addEventListener('input', actualizarTamanio);
+        document.getElementById('altoPlano').addEventListener('input', actualizarTamanio);
+
+        // Traer plano al centro de la pantalla (Para ubicarlo donde sea)
+        document.getElementById('btnCentrarPlano').addEventListener('click', function() {
+            centroPlano = map.getCenter();
+            actualizarTamanio();
+        });
+
+        // 3. TRANSPARENCIA Y ROTACIÓN
         document.getElementById('transparencia').addEventListener('input', function(e) {
             planoOverlay.setOpacity(e.target.value);
         });
 
-        // 5. ROTACIÓN (Con el truco para que no se borre al hacer zoom)
         const sliderRotacion = document.getElementById('rotacion');
         function aplicarRotacion() {
             if (planoOverlay) {
@@ -137,9 +142,9 @@
         sliderRotacion.addEventListener('input', aplicarRotacion);
         map.on('moveend', aplicarRotacion);
         map.on('zoomend', aplicarRotacion);
-        setTimeout(aplicarRotacion, 500); // Forzar rotación inicial al cargar
+        setTimeout(aplicarRotacion, 500);
 
-        // 6. BLOQUEAR PLANO (Solo visual, avisa que hay que dibujar con cuidado)
+        // 4. BLOQUEAR PLANO
         let planoBloqueado = false;
         document.getElementById('btnBloquear').addEventListener('click', function() {
             planoBloqueado = !planoBloqueado;
@@ -147,7 +152,7 @@
             this.style.background = planoBloqueado ? "#e67e22" : "#3498db";
         });
 
-        // 7. LÓGICA PARA MARCAR LOTES (4 CLICS)
+        // 5. LÓGICA DE CLICS
         let puntosActuales = [];
         let marcadoresTemporales = [];
         const panelResultados = document.getElementById('resultados');
@@ -156,88 +161,81 @@
         map.on('click', function(e) {
             puntosActuales.push(e.latlng);
             
-            // Dibujar un punto amarillo temporal en la esquina
-            let tempMarker = L.circleMarker(e.latlng, {radius: 4, color: 'yellow', fillOpacity: 1}).addTo(map);
+            // Punto amarillo súper pequeñito (Radio 2, borde fino 1)
+            let tempMarker = L.circleMarker(e.latlng, {radius: 2, weight: 1, color: 'yellow', fillOpacity: 1}).addTo(map);
             marcadoresTemporales.push(tempMarker);
             
             let numLoteActual = document.getElementById('numeroLote').value;
-            estadoClics.innerText = `Mapeando: Lote ${numLoteActual} (Clic ${puntosActuales.length + 1}/4)`;
+            let nombreLotePantalla = numLoteActual.trim() === "" ? "Sin Número" : numLoteActual;
+            estadoClics.innerText = `Mapeando: Lote ${nombreLotePantalla} (Clic ${puntosActuales.length + 1}/4)`;
 
-            // Si ya hicimos 4 clics, dibujar el polígono
             if (puntosActuales.length === 4) {
                 dibujarLote(puntosActuales, numLoteActual);
                 puntosActuales = []; 
-                
-                // Borrar puntos amarillos temporales
                 marcadoresTemporales.forEach(m => map.removeLayer(m));
                 marcadoresTemporales = [];
                 
-                // Preparar texto para el lote siguiente
                 let sigLote = document.getElementById('numeroLote').value;
-                estadoClics.innerText = `Mapeando: Lote ${sigLote} (Clic 1/4)`;
+                let sigNombre = sigLote.trim() === "" ? "Sin Número" : sigLote;
+                estadoClics.innerText = `Mapeando: Lote ${sigNombre} (Clic 1/4)`;
             }
         });
 
         function dibujarLote(puntos, numLote) {
             let estado = document.getElementById('estadoLote').value;
             
-            // ASIGNAR COLOR SEGÚN ESTADO
-            let colorFondo = '#2ecc71'; // Verde para libre
-            if (estado === 'vendido') {
-                colorFondo = '#e74c3c'; // Rojo para vendido
-            } else if (estado === 'verde') {
-                colorFondo = '#27ae60'; // Verde oscuro para espacio verde
-            }
+            let colorFondo = '#2ecc71'; 
+            if (estado === 'vendido') colorFondo = '#e74c3c'; 
+            else if (estado === 'verde') colorFondo = '#27ae60'; 
 
-            // CREAR EL TERRENO (Borde blanco fino y color de fondo)
             let poligono = L.polygon(puntos, {
-                color: '#ffffff',      // Línea blanca
-                weight: 1,             // Grosor ultra fino
-                dashArray: '4, 4',     // Línea de puntos
-                fillColor: colorFondo, // El color elegido arriba
-                fillOpacity: 0.5       // Transparencia del 50%
+                color: '#ffffff',      
+                weight: 1,             
+                dashArray: '4, 4',     
+                fillColor: colorFondo, 
+                fillOpacity: 0.5       
             }).addTo(map);
 
-            // PONER EL NÚMERO CIRCULAR EN EL CENTRO
-            let centro = poligono.getBounds().getCenter();
-            let iconoNumero = L.divIcon({
-                className: 'etiqueta-lote',
-                html: numLote,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-            L.marker(centro, {icon: iconoNumero}).addTo(map);
+            // SOLO DIBUJAR CÍRCULO SI LA CASILLA NO ESTÁ VACÍA
+            if (numLote.trim() !== "") {
+                let centro = poligono.getBounds().getCenter();
+                let iconoNumero = L.divIcon({
+                    className: 'etiqueta-lote',
+                    html: numLote,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+                L.marker(centro, {icon: iconoNumero}).addTo(map);
+                
+                // Auto-sumar solo si es un número real
+                if(!isNaN(parseInt(numLote))) {
+                    document.getElementById('numeroLote').value = parseInt(numLote) + 1;
+                }
+            }
 
-            // GUARDAR COORDENADAS EN LA PANTALLA NEGRA
             let prefijo = document.getElementById('prefijoLote').value;
-            let nombreCompleto = prefijo + numLote;
+            let nombreCompleto = numLote.trim() === "" ? prefijo + "Sin_Numero" : prefijo + numLote;
             let textoCoords = `\n// ${nombreCompleto} (${estado.toUpperCase()})\n`;
             puntos.forEach((p, i) => {
                 textoCoords += `P${i+1}: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}\n`;
             });
             panelResultados.innerText += textoCoords;
             panelResultados.scrollTop = panelResultados.scrollHeight;
-
-            // AUTO-SUMAR +1 AL NÚMERO DE LOTE
-            document.getElementById('numeroLote').value = parseInt(numLote) + 1;
         }
 
-        // 8. BOTÓN DESHACER (Por si te equivocas de clic)
         document.getElementById('btnDeshacer').addEventListener('click', function() {
             if (puntosActuales.length > 0) {
                 puntosActuales.pop();
                 let markerObj = marcadoresTemporales.pop();
                 map.removeLayer(markerObj);
                 let num = document.getElementById('numeroLote').value;
-                estadoClics.innerText = `Mapeando: Lote ${num} (Clic ${puntosActuales.length + 1}/4)`;
+                let nom = num.trim() === "" ? "Sin Número" : num;
+                estadoClics.innerText = `Mapeando: Lote ${nom} (Clic ${puntosActuales.length + 1}/4)`;
             }
         });
 
-        // 9. BOTÓN BORRAR TODO
         document.getElementById('btnBorrar').addEventListener('click', function() {
-            if(confirm('¿Seguro que quieres empezar de cero?')) {
-                location.reload(); 
-            }
+            if(confirm('¿Seguro que quieres empezar de cero?')) location.reload(); 
         });
     </script>
 </body>
