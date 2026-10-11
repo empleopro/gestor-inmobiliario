@@ -19,9 +19,13 @@
         button { width: 100%; padding: 10px; margin-top: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #2980b9; }
         #btnBloquear { font-size: 1.1rem; padding: 12px; }
-        #btnDeshacer { background: #34495e; width: 48%; float: left; }
-        #btnBorrar { background: #e74c3c; width: 48%; float: right; }
-        .clearfix::after { content: ""; clear: both; display: table; }
+        
+        /* Contenedor flexible para los botones de borrar */
+        .contenedor-botones { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-mitad { width: 50%; padding: 10px; margin-top: 0 !important; font-size: 0.85rem; }
+        #btnDeshacer { background: #34495e; }
+        #btnBorrarUltimoLote { background: #e67e22; }
+        #btnBorrarTodo { background: #e74c3c; margin-top: 10px; }
         
         #resultados { margin-top: 20px; background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; min-height: 150px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; max-height: 200px; }
         
@@ -73,24 +77,24 @@
             <option value="verde">Espacio Verde (Verde oscuro)</option>
         </select>
 
-        <!-- Indicador del efecto imán visible -->
         <p style="font-size: 0.8rem; color: #5dade2; font-weight: bold; margin: 10px 0 0 0;" id="feedbackMagnetico">
             🧲 Imán Inteligente Activo
         </p>
 
         <h3 style="margin-top: 15px; font-size: 0.9rem; color: #f1c40f;" id="estadoClics">Esperando bloqueo...</h3>
         
-        <div class="clearfix">
-            <button id="btnDeshacer">Deshacer Clic</button>
-            <button id="btnBorrar">Borrar Todo</button>
+        <!-- BOTONES DE CONTROL DE DIBUJO -->
+        <div class="contenedor-botones">
+            <button id="btnDeshacer" class="btn-mitad">Deshacer Clic</button>
+            <button id="btnBorrarUltimoLote" class="btn-mitad">Borrar Último Lote</button>
         </div>
+        <button id="btnBorrarTodo">Borrar TODO el mapa</button>
 
         <div id="resultados">Tus coordenadas GPS aparecerán aquí...</div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 1. INICIALIZAR MAPA EN SAPUCAI
         let centroInicial = L.latLng(-25.6644, -56.9602);
         const map = L.map('map').setView(centroInicial, 16); 
         
@@ -99,22 +103,15 @@
             attribution: '© Google'
         }).addTo(map);
 
-        // 2. CONFIGURACIÓN DEL PLANO Y TAMAÑO
         let centroPlano = centroInicial;
         
         function obtenerLimites() {
             let ancho = parseFloat(document.getElementById('anchoPlano').value);
             let alto = parseFloat(document.getElementById('altoPlano').value);
-            return [
-                [centroPlano.lat - alto, centroPlano.lng - ancho],
-                [centroPlano.lat + alto, centroPlano.lng + ancho]
-            ];
+            return [ [centroPlano.lat - alto, centroPlano.lng - ancho], [centroPlano.lat + alto, centroPlano.lng + ancho] ];
         }
 
-        let planoOverlay = L.imageOverlay('plano.jpg', obtenerLimites(), {
-            opacity: 0.7,
-            interactive: true 
-        }).addTo(map);
+        let planoOverlay = L.imageOverlay('plano.jpg', obtenerLimites(), { opacity: 0.7, interactive: true }).addTo(map);
 
         function actualizarTamanio() {
             planoOverlay.setBounds(obtenerLimites());
@@ -122,11 +119,8 @@
         }
         document.getElementById('anchoPlano').addEventListener('input', actualizarTamanio);
         document.getElementById('altoPlano').addEventListener('input', actualizarTamanio);
-        document.getElementById('transparencia').addEventListener('input', function(e) {
-            planoOverlay.setOpacity(e.target.value);
-        });
+        document.getElementById('transparencia').addEventListener('input', function(e) { planoOverlay.setOpacity(e.target.value); });
 
-        // 3. ROTACIÓN
         const sliderRotacion = document.getElementById('rotacion');
         function aplicarRotacion() {
             if (planoOverlay) {
@@ -142,7 +136,6 @@
         map.on('zoomend', aplicarRotacion);
         setTimeout(aplicarRotacion, 500);
 
-        // 4. LÓGICA DE ARRASTRAR EL PLANO CON EL MOUSE
         let planoBloqueado = false;
         let arrastrandoPlano = false;
 
@@ -180,7 +173,6 @@
             }
         });
 
-        // 5. BOTÓN BLOQUEAR / DESBLOQUEAR
         const textoModo = document.getElementById('textoModo');
         const estadoClics = document.getElementById('estadoClics');
         
@@ -193,9 +185,8 @@
                 textoModo.innerText = "Dibujando Terrenos";
                 textoModo.style.color = "#2ecc71";
                 
-                let numLoteActual = document.getElementById('numeroLote').value;
-                let nombreLotePantalla = numLoteActual.trim() === "" ? "Sin Número" : numLoteActual;
-                estadoClics.innerText = `Mapeando: Lote ${nombreLotePantalla} (Clic ${puntosActuales.length + 1}/4)`;
+                let num = document.getElementById('numeroLote').value;
+                estadoClics.innerText = `Mapeando: Lote ${num.trim() === "" ? "Sin Número" : num} (Clic ${puntosActuales.length + 1}/4)`;
             } else {
                 this.innerText = "Bloquear para Dibujar 🔒";
                 this.style.background = "#e67e22";
@@ -208,10 +199,12 @@
             }
         });
 
-        // 6. LÓGICA DE CLICS E IMÁN MÁGICO (SNAPPING)
+        // ARREGLO GLOBAL PARA GUARDAR LA HISTORIA DE LOTES TERMINADOS (Permite deshacer)
+        let lotesTerminados = []; 
+        
         let puntosActuales = [];
         let marcadoresTemporales = [];
-        let verticesExistentes = []; // Guardará todas las esquinas ya dibujadas para el imán
+        let verticesExistentes = []; 
         const panelResultados = document.getElementById('resultados');
         const feedbackMagnetico = document.getElementById('feedbackMagnetico');
 
@@ -221,23 +214,21 @@
                 return;
             }
 
-            // --- LÓGICA DEL IMÁN MÁGICO ---
             let puntoFinal = e.latlng;
-            let snapDistanciaPixeles = 15; // Ajuste de sensibilidad del "imán" en pantalla (píxeles)
+            let snapDistanciaPixeles = 15; 
             let seMagnetizo = false;
 
             verticesExistentes.forEach(function(v) {
                 let pClick = map.latLngToContainerPoint(e.latlng);
                 let pVertice = map.latLngToContainerPoint(v);
-                let dist = pClick.distanceTo(pVertice); // Distancia en píxeles
+                let dist = pClick.distanceTo(pVertice);
 
                 if (dist < snapDistanciaPixeles) {
-                    puntoFinal = v; // "Snap": el punto se pega exactamente al vértice existente
+                    puntoFinal = v; 
                     seMagnetizo = true;
                 }
             });
 
-            // Feedback visual rápido de imán
             if (seMagnetizo) {
                 feedbackMagnetico.innerText = "🧲 ¡Punto Imantado con Precisión!";
                 feedbackMagnetico.style.color = "#2ecc71";
@@ -248,48 +239,43 @@
             }
 
             puntosActuales.push(puntoFinal);
-            let colorMarcador = seMagnetizo ? '#00ff00' : 'yellow'; // Verde destello si imanta, amarillo si es libre
             let tempMarker = L.circleMarker(puntoFinal, {
                 radius: seMagnetizo ? 4 : 2, 
                 weight: 1, 
-                color: colorMarcador, 
+                color: seMagnetizo ? '#00ff00' : 'yellow', 
                 fillOpacity: 1
             }).addTo(map);
             marcadoresTemporales.push(tempMarker);
             
-            let numLoteActual = document.getElementById('numeroLote').value;
-            let nombreLotePantalla = numLoteActual.trim() === "" ? "Sin Número" : numLoteActual;
-            estadoClics.innerText = `Mapeando: Lote ${nombreLotePantalla} (Clic ${puntosActuales.length + 1}/4)`;
+            let num = document.getElementById('numeroLote').value;
+            estadoClics.innerText = `Mapeando: Lote ${num.trim() === "" ? "Sin Número" : num} (Clic ${puntosActuales.length + 1}/4)`;
 
             if (puntosActuales.length === 4) {
-                dibujarLote(puntosActuales, numLoteActual);
+                dibujarLote(puntosActuales, num);
                 puntosActuales = []; 
                 marcadoresTemporales.forEach(m => map.removeLayer(m));
                 marcadoresTemporales = [];
                 
                 let sigLote = document.getElementById('numeroLote').value;
-                let sigNombre = sigLote.trim() === "" ? "Sin Número" : sigLote;
-                estadoClics.innerText = `Mapeando: Lote ${sigNombre} (Clic 1/4)`;
+                estadoClics.innerText = `Mapeando: Lote ${sigLote.trim() === "" ? "Sin Número" : sigLote} (Clic 1/4)`;
             }
         });
 
         function dibujarLote(puntos, numLote) {
             let estado = document.getElementById('estadoLote').value;
-            let colorFondo = '#2ecc71'; 
-            if (estado === 'vendido') colorFondo = '#e74c3c'; 
-            else if (estado === 'verde') colorFondo = '#27ae60'; 
+            let colorFondo = estado === 'vendido' ? '#e74c3c' : (estado === 'verde' ? '#27ae60' : '#2ecc71'); 
 
             let poligono = L.polygon(puntos, {
                 color: '#ffffff', weight: 1, dashArray: '4, 4', fillColor: colorFondo, fillOpacity: 0.5       
             }).addTo(map);
 
-            // Guardar los 4 puntos de este lote nuevo en la lista del imán
             puntos.forEach(p => verticesExistentes.push(p));
+            let marcadorVisible = null;
 
             if (numLote.trim() !== "") {
                 let centro = poligono.getBounds().getCenter();
                 let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [24, 24], iconAnchor: [12, 12] });
-                L.marker(centro, {icon: iconoNumero}).addTo(map);
+                marcadorVisible = L.marker(centro, {icon: iconoNumero}).addTo(map);
                 if(!isNaN(parseInt(numLote))) document.getElementById('numeroLote').value = parseInt(numLote) + 1;
             }
 
@@ -299,21 +285,63 @@
             puntos.forEach((p, i) => { textoCoords += `P${i+1}: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}\n`; });
             panelResultados.innerText += textoCoords;
             panelResultados.scrollTop = panelResultados.scrollHeight;
+
+            // GUARDAR ESTE LOTE EN LA MEMORIA PARA PODER BORRARLO DESPUÉS
+            lotesTerminados.push({
+                poligonoShape: poligono,
+                marcadorShape: marcadorVisible,
+                textoAñadido: textoCoords,
+                numeroOriginal: numLote
+            });
         }
 
+        // --- BOTÓN DESHACER CLIC (PUNTO POR PUNTO) ---
         document.getElementById('btnDeshacer').addEventListener('click', function() {
             if (puntosActuales.length > 0 && planoBloqueado) {
                 puntosActuales.pop();
                 let markerObj = marcadoresTemporales.pop();
                 map.removeLayer(markerObj);
                 let num = document.getElementById('numeroLote').value;
-                let nom = num.trim() === "" ? "Sin Número" : num;
-                estadoClics.innerText = `Mapeando: Lote ${nom} (Clic ${puntosActuales.length + 1}/4)`;
+                estadoClics.innerText = `Mapeando: Lote ${num.trim() === "" ? "Sin Número" : num} (Clic ${puntosActuales.length + 1}/4)`;
             }
         });
 
-        document.getElementById('btnBorrar').addEventListener('click', function() {
-            if(confirm('¿Seguro que quieres empezar de cero?')) location.reload(); 
+        // --- NUEVO BOTÓN: BORRAR ÚLTIMO LOTE COMPLETO ---
+        document.getElementById('btnBorrarUltimoLote').addEventListener('click', function() {
+            if (lotesTerminados.length === 0) {
+                alert("No hay lotes para borrar.");
+                return;
+            }
+
+            // Sacamos el último lote de la lista
+            let ultimoLote = lotesTerminados.pop();
+
+            // 1. Borramos el dibujo (polígono) del mapa
+            map.removeLayer(ultimoLote.poligonoShape);
+            
+            // 2. Borramos el numerito (si lo tenía)
+            if (ultimoLote.marcadorShape) {
+                map.removeLayer(ultimoLote.marcadorShape);
+            }
+
+            // 3. Borramos las coordenadas de la pantalla negra
+            let textoActual = panelResultados.innerText;
+            // Cortamos exactamente el texto que se le había añadido
+            panelResultados.innerText = textoActual.slice(0, -ultimoLote.textoAñadido.length);
+
+            // 4. Quitamos los últimos 4 puntos del imán (para que no atraiga hacia un lote que ya no existe)
+            verticesExistentes.splice(-4, 4);
+
+            // 5. Devolvemos el número de lote en la casilla para que vuelva a ser el mismo de antes
+            document.getElementById('numeroLote').value = ultimoLote.numeroOriginal;
+            
+            let num = ultimoLote.numeroOriginal;
+            estadoClics.innerText = `Mapeando: Lote ${num.trim() === "" ? "Sin Número" : num} (Clic 1/4)`;
+        });
+
+        // --- BOTÓN BORRAR TODO (RESETEO) ---
+        document.getElementById('btnBorrarTodo').addEventListener('click', function() {
+            if(confirm('¿Seguro que quieres borrar todo el mapa y empezar de cero?')) location.reload(); 
         });
     </script>
 </body>
