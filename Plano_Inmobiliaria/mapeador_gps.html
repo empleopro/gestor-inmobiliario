@@ -73,6 +73,11 @@
             <option value="verde">Espacio Verde (Verde oscuro)</option>
         </select>
 
+        <!-- Indicador del efecto imán visible -->
+        <p style="font-size: 0.8rem; color: #5dade2; font-weight: bold; margin: 10px 0 0 0;" id="feedbackMagnetico">
+            🧲 Imán Inteligente Activo
+        </p>
+
         <h3 style="margin-top: 15px; font-size: 0.9rem; color: #f1c40f;" id="estadoClics">Esperando bloqueo...</h3>
         
         <div class="clearfix">
@@ -108,7 +113,7 @@
 
         let planoOverlay = L.imageOverlay('plano.jpg', obtenerLimites(), {
             opacity: 0.7,
-            interactive: true // Necesario para que detecte el mouse
+            interactive: true 
         }).addTo(map);
 
         function actualizarTamanio() {
@@ -156,14 +161,14 @@
         setTimeout(actualizarCursores, 500);
 
         planoOverlay.on('mousedown', function(e) {
-            if (planoBloqueado) return; // Si está bloqueado, no arrastra
+            if (planoBloqueado) return; 
             arrastrandoPlano = true;
-            map.dragging.disable(); // Congela el mapa de Google de fondo
+            map.dragging.disable(); 
         });
 
         map.on('mousemove', function(e) {
             if (arrastrandoPlano) {
-                centroPlano = e.latlng; // El centro del plano sigue al mouse
+                centroPlano = e.latlng; 
                 actualizarTamanio();
             }
         });
@@ -171,7 +176,7 @@
         map.on('mouseup', function(e) {
             if (arrastrandoPlano) {
                 arrastrandoPlano = false;
-                map.dragging.enable(); // Libera el mapa de Google
+                map.dragging.enable(); 
             }
         });
 
@@ -197,26 +202,59 @@
                 textoModo.innerText = "Moviendo Plano";
                 textoModo.style.color = "white";
                 estadoClics.innerText = "Esperando bloqueo...";
-                puntosActuales = []; // Reinicia clics si desbloqueas por error
+                puntosActuales = []; 
                 marcadoresTemporales.forEach(m => map.removeLayer(m));
                 marcadoresTemporales = [];
             }
         });
 
-        // 6. LÓGICA DE CLICS (SOLO FUNCIONA SI ESTÁ BLOQUEADO)
+        // 6. LÓGICA DE CLICS E IMÁN MÁGICO (SNAPPING)
         let puntosActuales = [];
         let marcadoresTemporales = [];
+        let verticesExistentes = []; // Guardará todas las esquinas ya dibujadas para el imán
         const panelResultados = document.getElementById('resultados');
+        const feedbackMagnetico = document.getElementById('feedbackMagnetico');
 
         map.on('click', function(e) {
-            // EVITAR CLICS ACCIDENTALES SI NO ESTÁ BLOQUEADO
             if (!planoBloqueado) {
                 alert("Primero ubica el plano arrastrándolo con el mouse.\nLuego haz clic en 'Bloquear para Dibujar 🔒' para marcar los terrenos.");
                 return;
             }
 
-            puntosActuales.push(e.latlng);
-            let tempMarker = L.circleMarker(e.latlng, {radius: 2, weight: 1, color: 'yellow', fillOpacity: 1}).addTo(map);
+            // --- LÓGICA DEL IMÁN MÁGICO ---
+            let puntoFinal = e.latlng;
+            let snapDistanciaPixeles = 15; // Ajuste de sensibilidad del "imán" en pantalla (píxeles)
+            let seMagnetizo = false;
+
+            verticesExistentes.forEach(function(v) {
+                let pClick = map.latLngToContainerPoint(e.latlng);
+                let pVertice = map.latLngToContainerPoint(v);
+                let dist = pClick.distanceTo(pVertice); // Distancia en píxeles
+
+                if (dist < snapDistanciaPixeles) {
+                    puntoFinal = v; // "Snap": el punto se pega exactamente al vértice existente
+                    seMagnetizo = true;
+                }
+            });
+
+            // Feedback visual rápido de imán
+            if (seMagnetizo) {
+                feedbackMagnetico.innerText = "🧲 ¡Punto Imantado con Precisión!";
+                feedbackMagnetico.style.color = "#2ecc71";
+                setTimeout(() => {
+                    feedbackMagnetico.innerText = "🧲 Imán Inteligente Activo";
+                    feedbackMagnetico.style.color = "#5dade2";
+                }, 1000);
+            }
+
+            puntosActuales.push(puntoFinal);
+            let colorMarcador = seMagnetizo ? '#00ff00' : 'yellow'; // Verde destello si imanta, amarillo si es libre
+            let tempMarker = L.circleMarker(puntoFinal, {
+                radius: seMagnetizo ? 4 : 2, 
+                weight: 1, 
+                color: colorMarcador, 
+                fillOpacity: 1
+            }).addTo(map);
             marcadoresTemporales.push(tempMarker);
             
             let numLoteActual = document.getElementById('numeroLote').value;
@@ -244,6 +282,9 @@
             let poligono = L.polygon(puntos, {
                 color: '#ffffff', weight: 1, dashArray: '4, 4', fillColor: colorFondo, fillOpacity: 0.5       
             }).addTo(map);
+
+            // Guardar los 4 puntos de este lote nuevo en la lista del imán
+            puntos.forEach(p => verticesExistentes.push(p));
 
             if (numLote.trim() !== "") {
                 let centro = poligono.getBounds().getCenter();
