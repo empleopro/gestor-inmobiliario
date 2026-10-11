@@ -2,210 +2,243 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mapeador Premium GPS (Precisión Total)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeador GPS de Precisión</title>
+    <!-- CSS de Leaflet para el mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; display: flex; font-family: Arial; background: #1e1e1e; color: white; height: 100vh; overflow: hidden; }
-        #mapa { width: 75%; height: 100vh; }
-        .panel-control { width: 25%; padding: 20px; background: #2c3e50; display: flex; flex-direction: column; z-index: 1000; box-shadow: -5px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
-        textarea { width: 100%; height: 120px; margin-top: 15px; font-family: monospace; font-size: 11px; background: #000; color: #0f0; border: 1px solid #555; padding: 10px; }
-        h3 { margin-top: 0; color: #2ecc71; }
-        .estado { font-size: 14px; font-weight: bold; margin: 10px 0; color: #f1c40f; }
-        .botones-grupo { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;}
-        .botones-grupo button { flex: 1; padding: 8px; background: #34495e; color: white; border: 1px solid #555; cursor: pointer; min-width: 45%;}
-        .btn-borrar-todo { background: #c0392b !important; }
-        .btn-anclas { background: #2980b9 !important; font-weight: bold;}
-        input[type="range"], input[type="text"] { width: 100%; box-sizing: border-box; margin: 5px 0 10px 0; }
-        .instrucciones { font-size: 12px; color: #bdc3c7; line-height: 1.4; margin-bottom: 10px;}
+        body { margin: 0; padding: 0; display: flex; font-family: sans-serif; background: #1a1a1a; }
         
-        /* FORZAR CURSOR DE PRECISIÓN (CRUZ) */
-        .leaflet-container, .leaflet-grab, .leaflet-interactive { cursor: crosshair !important; }
-        .leaflet-dragging .leaflet-grab, .leaflet-dragging .leaflet-grab .leaflet-interactive { cursor: crosshair !important; }
+        /* Contenedor del mapa a la izquierda */
+        #map { width: 75%; height: 100vh; cursor: crosshair; }
+        
+        /* Contenedor del panel a la derecha */
+        #panel { width: 25%; padding: 20px; background: #2c3e50; color: white; height: 100vh; box-sizing: border-box; overflow-y: auto; border-left: 2px solid #34495e; }
+        
+        h2 { color: #2ecc71; margin-top: 0; font-size: 1.2rem; }
+        label { display: block; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
+        input[type="range"], input[type="text"], input[type="number"], select { width: 100%; margin-top: 5px; }
+        input[type="text"], input[type="number"], select { padding: 8px; border-radius: 4px; border: none; box-sizing: border-box; font-size: 14px; }
+        
+        button { width: 100%; padding: 10px; margin-top: 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #2980b9; }
+        #btnDeshacer { background: #34495e; width: 48%; float: left; margin-top: 10px; }
+        #btnBorrar { background: #e74c3c; width: 48%; float: right; margin-top: 10px; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+        
+        #resultados { margin-top: 20px; background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.8rem; min-height: 150px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; max-height: 200px; }
+        
+        /* ESTILO: Círculo blanco para el número del lote */
+        .etiqueta-lote {
+            background-color: white;
+            border-radius: 50%;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            line-height: 24px;
+            width: 24px !important;
+            height: 24px !important;
+            border: 1px solid #333;
+            font-size: 12px;
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Mira de francotirador central */
+        .mira-centro {
+            position: absolute; top: 50%; left: 37.5%; transform: translate(-50%, -50%);
+            width: 20px; height: 20px; pointer-events: none; z-index: 1000;
+        }
+        .mira-centro::before, .mira-centro::after { content: ''; position: absolute; background: red; }
+        .mira-centro::before { top: 9px; left: 0; width: 20px; height: 2px; }
+        .mira-centro::after { top: 0; left: 9px; width: 2px; height: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="mapa"></div>
-
-    <div class="panel-control">
-        <h3>Mapeador GPS de Precisión</h3>
-        
-        <p class="instrucciones">
-            <b>1.</b> Usa los marcadores y la rotación para calzar el plano.<br>
-            <b>2.</b> Presiona "Bloquear Plano" para evitar moverlo.<br>
-            <b>3.</b> Dibuja con la mira de precisión (+).
+    <!-- MAPA Y MIRA -->
+    <div id="map"></div>
+    <div class="mira-centro"></div>
+    
+    <!-- PANEL DERECHO -->
+    <div id="panel">
+        <h2>Mapeador GPS de Precisión</h2>
+        <p style="font-size: 0.8rem; color: #bdc3c7;">
+            1. Usa la rotación para calzar el plano.<br>
+            2. Bloquea el plano para no moverlo por error.<br>
+            3. Haz 4 clics en las esquinas para marcar un lote.
         </p>
-        
+
         <label>Transparencia del Plano:</label>
-        <input type="range" id="opacidadPlano" min="0" max="1" step="0.1" value="0.5" oninput="cambiarOpacidad(this.value)">
+        <input type="range" id="transparencia" min="0" max="1" step="0.05" value="0.7">
 
-        <label>Rotación del Plano (°):</label>
-        <input type="range" id="rotacionPlano" min="-180" max="180" step="0.5" value="0" oninput="cambiarRotacion(this.value)">
+        <label>Rotación del Plano (º):</label>
+        <input type="range" id="rotacion" min="-180" max="180" step="0.5" value="0">
 
-        <button class="btn-anclas" id="btnBloquear" onclick="alternarAnclas()">Bloquear / Fijar Plano</button>
+        <button id="btnBloquear">Bloquear / Fijar Plano</button>
 
-        <label style="margin-top:15px;">Prefijo del Lote:</label>
-        <input type="text" id="prefijo" value="Manzana_1_Lote_" style="padding: 8px;">
+        <label>Prefijo del Lote:</label>
+        <input type="text" id="prefijoLote" value="Manzana_1_Lote_">
+
+        <label>Número de Lote (Automático):</label>
+        <input type="number" id="numeroLote" value="1">
+
+        <label>Estado del Terreno:</label>
+        <select id="estadoLote">
+            <option value="libre">Disponible (Verde claro)</option>
+            <option value="vendido">Vendido (Rojo)</option>
+            <option value="verde">Espacio Verde (Verde oscuro)</option>
+        </select>
+
+        <h3 style="margin-top: 20px; font-size: 1rem; color: #f1c40f;" id="estadoClics">Mapeando: Lote 1 (Clic 1/4)</h3>
         
-        <div class="estado" id="textoEstado">Mapeando: Lote 1 (Clic 1/4)</div>
-        
-        <div class="botones-grupo">
-            <button onclick="deshacerUltimo()">Deshacer Clic</button>
-            <button class="btn-borrar-todo" onclick="borrarTodo()">Borrar Todo</button>
+        <div class="clearfix">
+            <button id="btnDeshacer">Deshacer Clic</button>
+            <button id="btnBorrar">Borrar Todo</button>
         </div>
-        
-        <textarea id="codigoSalida" placeholder="Tu código GPS para los lotes aparecerá aquí..."></textarea>
+
+        <div id="resultados">Tus coordenadas GPS aparecerán aquí...</div>
     </div>
 
+    <!-- JS de Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
-        const mapa = L.map('mapa').setView([-25.665706, -56.937467], 17);
-
-        L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-            maxZoom: 21,
-            subdomains:['mt0','mt1','mt2','mt3']
-        }).addTo(mapa);
-
-        // --- SISTEMA PARA ARRASTRAR EL PLANO ---
-        const urlPlano = 'plano.jpg'; 
-        let esquinaSuperiorIzq = L.latLng(-25.663706, -56.939467);
-        let esquinaInferiorDer = L.latLng(-25.667706, -56.935467);
-        let limitesPlano = L.latLngBounds(esquinaSuperiorIzq, esquinaInferiorDer);
+        // 1. INICIALIZAR MAPA (Ajusta estas coordenadas -25.7, -56.9 a las del terreno en Sapucai si necesitas)
+        const map = L.map('map').setView([-25.7, -56.9], 16); 
         
-        let superposicion = L.imageOverlay(urlPlano, limitesPlano, { opacity: 0.5 }).addTo(mapa);
+        // 2. CAPA SATELITAL GOOGLE
+        L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 21,
+            attribution: '© Google'
+        }).addTo(map);
 
-        let ancla1 = L.marker(esquinaSuperiorIzq, {draggable: true}).addTo(mapa);
-        let ancla2 = L.marker(esquinaInferiorDer, {draggable: true}).addTo(mapa);
+        // 3. CARGAR EL PLANO.JPG (Ajusta los puntos boundsPlano para que encaje mejor al iniciar)
+        let boundsPlano = [[-25.705, -56.905], [-25.695, -56.895]]; 
+        let planoOverlay = L.imageOverlay('plano.jpg', boundsPlano, {
+            opacity: 0.7,
+            interactive: true
+        }).addTo(map);
 
-        function actualizarLimites() {
-            let nuevosLimites = L.latLngBounds(ancla1.getLatLng(), ancla2.getLatLng());
-            superposicion.setBounds(nuevosLimites);
-        }
+        // 4. TRANSPARENCIA
+        document.getElementById('transparencia').addEventListener('input', function(e) {
+            planoOverlay.setOpacity(e.target.value);
+        });
 
-        ancla1.on('drag', actualizarLimites);
-        ancla2.on('drag', actualizarLimites);
-
-        function cambiarOpacidad(valor) { superposicion.setOpacity(valor); }
-
-        // --- SISTEMA DE ROTACIÓN AVANZADA ---
-        let rotacionActual = 0;
-        function cambiarRotacion(valor) {
-            rotacionActual = valor;
-            aplicarRotacionVisual();
-        }
-
-        function aplicarRotacionVisual() {
-            let img = superposicion.getElement();
-            if(!img) return;
-            let transformBase = img.style.transform;
-            if(!transformBase.includes('rotate')) {
-                img.style.transform = transformBase + ` rotate(${rotacionActual}deg)`;
-            } else {
-                img.style.transform = transformBase.replace(/rotate\([^)]+\)/, `rotate(${rotacionActual}deg)`);
+        // 5. ROTACIÓN (Con el truco para que no se borre al hacer zoom)
+        const sliderRotacion = document.getElementById('rotacion');
+        function aplicarRotacion() {
+            if (planoOverlay) {
+                let img = planoOverlay.getElement();
+                if (img) {
+                    let transformActual = img.style.transform.replace(/ rotate\(.*?\)/g, '');
+                    img.style.transform = transformActual + ' rotate(' + sliderRotacion.value + 'deg)';
+                }
             }
         }
+        sliderRotacion.addEventListener('input', aplicarRotacion);
+        map.on('moveend', aplicarRotacion);
+        map.on('zoomend', aplicarRotacion);
+        setTimeout(aplicarRotacion, 500); // Forzar rotación inicial al cargar
 
-        // Evita que Leaflet borre la rotación al hacer zoom o mover el mapa
-        superposicion.on('add', () => {
-            let img = superposicion.getElement();
-            let observador = new MutationObserver((mutations) => {
-                mutations.forEach((m) => {
-                    if (m.attributeName === 'style') {
-                        let t = img.style.transform;
-                        if (!t.includes('rotate') && rotacionActual != 0) {
-                            img.style.transform = t + ` rotate(${rotacionActual}deg)`;
-                        }
-                    }
-                });
+        // 6. BLOQUEAR PLANO (Solo visual, avisa que hay que dibujar con cuidado)
+        let planoBloqueado = false;
+        document.getElementById('btnBloquear').addEventListener('click', function() {
+            planoBloqueado = !planoBloqueado;
+            this.innerText = planoBloqueado ? "Desbloquear Plano" : "Bloquear / Fijar Plano";
+            this.style.background = planoBloqueado ? "#e67e22" : "#3498db";
+        });
+
+        // 7. LÓGICA PARA MARCAR LOTES (4 CLICS)
+        let puntosActuales = [];
+        let marcadoresTemporales = [];
+        const panelResultados = document.getElementById('resultados');
+        const estadoClics = document.getElementById('estadoClics');
+
+        map.on('click', function(e) {
+            puntosActuales.push(e.latlng);
+            
+            // Dibujar un punto amarillo temporal en la esquina
+            let tempMarker = L.circleMarker(e.latlng, {radius: 4, color: 'yellow', fillOpacity: 1}).addTo(map);
+            marcadoresTemporales.push(tempMarker);
+            
+            let numLoteActual = document.getElementById('numeroLote').value;
+            estadoClics.innerText = `Mapeando: Lote ${numLoteActual} (Clic ${puntosActuales.length + 1}/4)`;
+
+            // Si ya hicimos 4 clics, dibujar el polígono
+            if (puntosActuales.length === 4) {
+                dibujarLote(puntosActuales, numLoteActual);
+                puntosActuales = []; 
+                
+                // Borrar puntos amarillos temporales
+                marcadoresTemporales.forEach(m => map.removeLayer(m));
+                marcadoresTemporales = [];
+                
+                // Preparar texto para el lote siguiente
+                let sigLote = document.getElementById('numeroLote').value;
+                estadoClics.innerText = `Mapeando: Lote ${sigLote} (Clic 1/4)`;
+            }
+        });
+
+        function dibujarLote(puntos, numLote) {
+            let estado = document.getElementById('estadoLote').value;
+            
+            // ASIGNAR COLOR SEGÚN ESTADO
+            let colorFondo = '#2ecc71'; // Verde para libre
+            if (estado === 'vendido') {
+                colorFondo = '#e74c3c'; // Rojo para vendido
+            } else if (estado === 'verde') {
+                colorFondo = '#27ae60'; // Verde oscuro para espacio verde
+            }
+
+            // CREAR EL TERRENO (Borde blanco fino y color de fondo)
+            let poligono = L.polygon(puntos, {
+                color: '#ffffff',      // Línea blanca
+                weight: 1,             // Grosor ultra fino
+                dashArray: '4, 4',     // Línea de puntos
+                fillColor: colorFondo, // El color elegido arriba
+                fillOpacity: 0.5       // Transparencia del 50%
+            }).addTo(map);
+
+            // PONER EL NÚMERO CIRCULAR EN EL CENTRO
+            let centro = poligono.getBounds().getCenter();
+            let iconoNumero = L.divIcon({
+                className: 'etiqueta-lote',
+                html: numLote,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
             });
-            observador.observe(img, { attributes: true });
-        });
+            L.marker(centro, {icon: iconoNumero}).addTo(map);
 
-        let anclasVisibles = true;
-        function alternarAnclas() {
-            if(anclasVisibles) {
-                mapa.removeLayer(ancla1);
-                mapa.removeLayer(ancla2);
-                document.getElementById("btnBloquear").innerText = "Desbloquear Plano";
-                document.getElementById("btnBloquear").style.background = "#27ae60";
-            } else {
-                ancla1.addTo(mapa);
-                ancla2.addTo(mapa);
-                document.getElementById("btnBloquear").innerText = "Bloquear / Fijar Plano";
-                document.getElementById("btnBloquear").style.background = "#2980b9";
-            }
-            anclasVisibles = !anclasVisibles;
+            // GUARDAR COORDENADAS EN LA PANTALLA NEGRA
+            let prefijo = document.getElementById('prefijoLote').value;
+            let nombreCompleto = prefijo + numLote;
+            let textoCoords = `\n// ${nombreCompleto} (${estado.toUpperCase()})\n`;
+            puntos.forEach((p, i) => {
+                textoCoords += `P${i+1}: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}\n`;
+            });
+            panelResultados.innerText += textoCoords;
+            panelResultados.scrollTop = panelResultados.scrollHeight;
+
+            // AUTO-SUMAR +1 AL NÚMERO DE LOTE
+            document.getElementById('numeroLote').value = parseInt(numLote) + 1;
         }
 
-        // --- SISTEMA DE DIBUJO DE ALTA PRECISIÓN ---
-        let coordenadasPoligono = [];
-        let contadorLote = 1;
-        let poligonosDibujados = [];
-        let puntosMarcadores = [];
-        const salida = document.getElementById("codigoSalida");
-        const textoEstado = document.getElementById("textoEstado");
-
-        mapa.on('click', function(e) {
-            if(e.originalEvent.target.classList.contains('leaflet-marker-icon')) return;
-
-            let lat = e.latlng.lat;
-            let lng = e.latlng.lng;
-            coordenadasPoligono.push([lat, lng]);
-
-            // PUNTOS MINIATURA (Amarillos y muy finos para precisión)
-            let marcador = L.circleMarker([lat, lng], {radius: 2, color: '#f1c40f', fillColor: '#f1c40f', fillOpacity: 1, weight: 1}).addTo(mapa);
-            puntosMarcadores.push(marcador);
-
-            actualizarEstado();
-
-            if (coordenadasPoligono.length === 4) {
-                generarLote();
+        // 8. BOTÓN DESHACER (Por si te equivocas de clic)
+        document.getElementById('btnDeshacer').addEventListener('click', function() {
+            if (puntosActuales.length > 0) {
+                puntosActuales.pop();
+                let markerObj = marcadoresTemporales.pop();
+                map.removeLayer(markerObj);
+                let num = document.getElementById('numeroLote').value;
+                estadoClics.innerText = `Mapeando: Lote ${num} (Clic ${puntosActuales.length + 1}/4)`;
             }
         });
 
-        function generarLote() {
-            let prefijo = document.getElementById("prefijo").value;
-            let codigoId = `${prefijo}${contadorLote}`;
-            
-            let nuevoPoligono = L.polygon(coordenadasPoligono, {color: '#00ff00', fillColor: '#00ff00', fillOpacity: 0.4, weight: 1.5}).addTo(mapa);
-            poligonosDibujados.push(nuevoPoligono);
-
-            puntosMarcadores.forEach(m => mapa.removeLayer(m));
-            puntosMarcadores = [];
-
-            let coordString = JSON.stringify(coordenadasPoligono);
-            let codigoGenerado = `crearLote("${codigoId}", ${coordString});\n`;
-            salida.value += codigoGenerado;
-            
-            contadorLote++;
-            coordenadasPoligono = [];
-            actualizarEstado();
-        }
-
-        function actualizarEstado() { textoEstado.innerText = `Mapeando: Lote ${contadorLote} (Clic ${coordenadasPoligono.length + 1}/4)`; }
-
-        function deshacerUltimo() {
-            if (coordenadasPoligono.length > 0) {
-                coordenadasPoligono.pop();
-                let ultimoMarcador = puntosMarcadores.pop();
-                mapa.removeLayer(ultimoMarcador);
-                actualizarEstado();
+        // 9. BOTÓN BORRAR TODO
+        document.getElementById('btnBorrar').addEventListener('click', function() {
+            if(confirm('¿Seguro que quieres empezar de cero?')) {
+                location.reload(); 
             }
-        }
-
-        function borrarTodo() {
-            if (confirm("¿Estás seguro? Se borrará todo el código que copiaste.")) {
-                salida.value = "";
-                contadorLote = 1;
-                poligonosDibujados.forEach(p => mapa.removeLayer(p));
-                puntosMarcadores.forEach(m => mapa.removeLayer(m));
-                poligonosDibujados = [];
-                puntosMarcadores = [];
-                coordenadasPoligono = [];
-                actualizarEstado();
-            }
-        }
+        });
     </script>
 </body>
 </html>
