@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cortador de Manzanas - Setup SaaS</title>
+    <style>
+        body { margin: 0; display: flex; font-family: Arial; background: #1e1e1e; color: white; height: 100vh; overflow: hidden; }
+        .panel-mapa { width: 75%; position: relative; overflow: auto; display: flex; justify-content: center; align-items: flex-start; }
+        .panel-control { width: 25%; padding: 20px; background: #2c3e50; box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 10; display: flex; flex-direction: column; }
+        img { max-width: 100%; height: auto; display: block; }
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+        textarea { width: 100%; flex-grow: 1; margin-top: 15px; font-family: monospace; font-size: 11px; background: #000; color: #0f0; border: 1px solid #555; padding: 10px; box-sizing: border-box; }
+        button { padding: 12px; background: #27ae60; color: white; border: none; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; border-radius: 4px; }
+        button.borrar { background: #e74c3c; }
+        input { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border-radius: 4px; border: none; }
+        .instrucciones { font-size: 13px; color: #bdc3c7; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="panel-mapa">
+        <!-- Reemplaza con el nombre exacto de tu imagen en alta resolución -->
+        <img src="plano.jpg" alt="Plano">
+        <svg id="svgCapa" viewBox="0 0 1000 1000" preserveAspectRatio="none" onclick="marcarPunto(event)">
+            <polygon id="poligonoTemp" fill="rgba(255, 255, 0, 0.3)" stroke="yellow" stroke-width="2"></polygon>
+        </svg>
+    </div>
+
+    <div class="panel-control">
+        <h3>Cortador de Manzanas</h3>
+        <div class="instrucciones">
+            <b>Paso 1:</b> Haz 4 clics bordeando TODA una fila entera de terrenos (en orden: Arriba-Izq, Arriba-Der, Abajo-Der, Abajo-Izq).<br><br>
+            <b>Paso 2:</b> Indica en cuántos lotes se divide ese bloque y presiona Generar.
+        </div>
+        
+        <label>Prefijo (Ej: Manzana_A_Lote_):</label>
+        <input type="text" id="prefijoLote" value="M1_Lote_">
+        
+        <label>Cantidad de Lotes en el bloque:</label>
+        <input type="number" id="cantidadLotes" value="20" min="1">
+        
+        <button onclick="generarBloque()">✂️ Cortar y Generar Código</button>
+        <button class="borrar" onclick="limpiar()">🗑️ Limpiar Puntos</button>
+        
+        <textarea id="codigoSalida" placeholder="Tu código SVG masivo aparecerá aquí..."></textarea>
+    </div>
+
+    <script>
+        let puntos = [];
+        const svg = document.getElementById("svgCapa");
+        const poligonoTemp = document.getElementById("poligonoTemp");
+        const salida = document.getElementById("codigoSalida");
+
+        function marcarPunto(e) {
+            if(puntos.length >= 4) return; // Solo permite 4 esquinas del bloque mayor
+            let rect = svg.getBoundingClientRect();
+            let x = ((e.clientX - rect.left) / rect.width) * 1000;
+            let y = ((e.clientY - rect.top) / rect.height) * 1000;
+            
+            puntos.push({x, y});
+            dibujarTemp();
+        }
+
+        function dibujarTemp() {
+            if(puntos.length === 0) {
+                poligonoTemp.setAttribute("points", "");
+                return;
+            }
+            let ptsString = puntos.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+            poligonoTemp.setAttribute("points", ptsString);
+        }
+
+        function limpiar() {
+            puntos = [];
+            dibujarTemp();
+        }
+
+        function generarBloque() {
+            if (puntos.length !== 4) {
+                alert("Debes marcar exactamente las 4 esquinas de la fila de terrenos.");
+                return;
+            }
+
+            let n = parseInt(document.getElementById("cantidadLotes").value);
+            let prefijo = document.getElementById("prefijoLote").value;
+            let codigoGenerado = `<!-- BLOQUE: ${prefijo} (Generado automáticamente) -->\n`;
+
+            // Puntos del bloque: p0(TL), p1(TR), p2(BR), p3(BL)
+            let p0 = puntos[0], p1 = puntos[1], p2 = puntos[2], p3 = puntos[3];
+
+            for (let i = 0; i < n; i++) {
+                // Interpolación matemática para cortar las rebanadas
+                let t1 = i / n;
+                let t2 = (i + 1) / n;
+
+                // Calcula las 4 esquinas del sub-lote actual
+                let tl = { x: p0.x + (p3.x - p0.x) * t1, y: p0.y + (p3.y - p0.y) * t1 };
+                let tr = { x: p1.x + (p2.x - p1.x) * t1, y: p1.y + (p2.y - p1.y) * t1 };
+                let br = { x: p1.x + (p2.x - p1.x) * t2, y: p1.y + (p2.y - p1.y) * t2 };
+                let bl = { x: p0.x + (p3.x - p0.x) * t2, y: p0.y + (p3.y - p0.y) * t2 };
+
+                let coordStr = `${tl.x.toFixed(1)},${tl.y.toFixed(1)} ${tr.x.toFixed(1)},${tr.y.toFixed(1)} ${br.x.toFixed(1)},${br.y.toFixed(1)} ${bl.x.toFixed(1)},${bl.y.toFixed(1)}`;
+                
+                codigoGenerado += `<polygon id="${prefijo}${i+1}" class="lote" points="${coordStr}" onclick="gestionarVenta(this)"></polygon>\n`;
+            }
+
+            salida.value += codigoGenerado + "\n";
+            limpiar(); // Listo para el siguiente bloque
+        }
+    </script>
+</body>
+</html>

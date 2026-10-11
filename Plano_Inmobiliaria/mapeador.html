@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mapeador Pro + Precisión Absoluta</title>
+    <style>
+        body { margin: 0; display: flex; font-family: Arial; background: #1e1e1e; color: white; height: 100vh; overflow: hidden; }
+        .panel-mapa { width: 75%; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #111; cursor: grab; }
+        .panel-mapa:active { cursor: grabbing; }
+        .contenedor-zoom { position: relative; transform-origin: 0 0; }
+        img { display: block; max-width: none; }
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+        .panel-control { width: 25%; padding: 20px; background: #2c3e50; display: flex; flex-direction: column; z-index: 100; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
+        textarea { width: 100%; flex-grow: 1; margin-top: 15px; font-family: monospace; font-size: 11px; background: #000; color: #0f0; border: 1px solid #555; padding: 10px; }
+        h3 { margin-top: 0; color: #2ecc71; }
+        .estado { font-size: 16px; font-weight: bold; margin: 10px 0; color: #f1c40f; }
+        .botones-grupo { display: flex; gap: 5px; margin-bottom: 10px; }
+        .botones-grupo button { flex: 1; padding: 8px; background: #34495e; color: white; border: 1px solid #555; cursor: pointer; }
+        .btn-borrar-todo { background: #c0392b !important; }
+    </style>
+</head>
+<body>
+    <div class="panel-mapa" id="panelMapa">
+        <div class="contenedor-zoom" id="contenedorZoom">
+            <img id="imagenPlano" src="plano.jpg" alt="Plano">
+            <svg id="svgCapa" viewBox="0 0 1000 1000" preserveAspectRatio="none" onclick="manejarClic(event)">
+                <polygon id="poligonoTemp" fill="rgba(255, 0, 0, 0.3)" stroke="red" stroke-width="0.8"></polygon>
+            </svg>
+        </div>
+    </div>
+
+    <div class="panel-control">
+        <h3>Mapeador Pro Preciso</h3>
+        <p>Coordenadas protegidas contra zoom y recargas. <b>Clic derecho</b> en un lote verde para borrarlo.</p>
+        
+        <div class="botones-grupo">
+            <button onclick="resetZoom()">Restablecer Vista</button>
+            <button class="btn-borrar-todo" onclick="borrarTodo()">Borrar Todo</button>
+        </div>
+
+        <label>Prefijo del grupo actual:</label>
+        <input type="text" id="prefijo" value="Manzana_1_Lote_" style="width: 100%; padding: 5px; margin-top: 5px; margin-bottom: 15px;">
+        
+        <div class="estado" id="textoEstado">Mapeando: Lote 1 (Clic 1/4)</div>
+        
+        <button onclick="deshacerUltimo()" style="padding: 10px; background: #e74c3c; color: white; border: none; cursor: pointer; border-radius: 4px; margin-bottom: 10px;">Deshacer último clic suelto</button>
+        
+        <textarea id="codigoSalida" placeholder="Tu código HTML aparecerá aquí..."></textarea>
+    </div>
+
+    <script>
+        let puntos = [];
+        let contadorLote = 1;
+        let lotesGuardados = [];
+
+        const panelMapa = document.getElementById("panelMapa");
+        const contenedorZoom = document.getElementById("contenedorZoom");
+        const imagenPlano = document.getElementById("imagenPlano");
+        const svg = document.getElementById("svgCapa");
+        const poligonoTemp = document.getElementById("poligonoTemp");
+        const salida = document.getElementById("codigoSalida");
+        const textoEstado = document.getElementById("textoEstado");
+
+        let escala = 1, pX = 0, pY = 0;
+        let estaArrastrando = false, fueArrastrado = false;
+        let inicioX, inicioY, clickStartX, clickStartY;
+
+        // Inicializar dimensiones reales de la imagen en el SVG
+        function inicializarSVG() {
+            if (imagenPlano.naturalWidth) {
+                svg.setAttribute("viewBox", `0 0 ${imagenPlano.naturalWidth} ${imagenPlano.naturalHeight}`);
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            inicializarSVG();
+            const datosPrevios = localStorage.getItem("mapa_lotes_guardados");
+            const contadorPrevio = localStorage.getItem("mapa_contador");
+            const codigoPrevio = localStorage.getItem("mapa_codigo");
+
+            if (codigoPrevio) salida.value = codigoPrevio;
+            if (contadorPrevio) contadorLote = parseInt(contadorPrevio);
+
+            if (datosPrevios) {
+                lotesGuardados = JSON.parse(datosPrevios);
+                if (imagenPlano.complete) {
+                    restaurarLotesEnPantalla();
+                } else {
+                    imagenPlano.onload = () => {
+                        inicializarSVG();
+                        restaurarLotesEnPantalla();
+                    };
+                }
+            }
+            actualizarEstado();
+        });
+
+        imagenPlano.onload = function() {
+            inicializarSVG();
+            restaurarLotesEnPantalla();
+        };
+
+        function restaurarLotesEnPantalla() {
+            const pols = svg.querySelectorAll("polygon:not(#poligonoTemp)");
+            pols.forEach(p => p.remove());
+
+            lotesGuardados.forEach(item => {
+                dibujarPoligonoVisual(item.id, item.puntosArray, item.codigoHtml);
+            });
+        }
+
+        panelMapa.addEventListener("wheel", function(e) {
+            e.preventDefault();
+            let zoomFactor = 1.1;
+            if (e.deltaY < 0) { escala *= zoomFactor; } 
+            else { escala /= zoomFactor; }
+            escala = Math.max(1, Math.min(escala, 10));
+            aplicarTransformacion();
+        });
+
+        panelMapa.addEventListener("mousedown", function(e) {
+            if(e.button === 0) {
+                estaArrastrando = true;
+                fueArrastrado = false;
+                inicioX = e.clientX - pX;
+                inicioY = e.clientY - pY;
+                clickStartX = e.clientX;
+                clickStartY = e.clientY;
+            }
+        });
+
+        window.addEventListener("mousemove", function(e) {
+            if (!estaArrastrando) return;
+            pX = e.clientX - inicioX;
+            pY = e.clientY - inicioY;
+            aplicarTransformacion();
+            if (Math.hypot(e.clientX - clickStartX, e.clientY - clickStartY) > 4) {
+                fueArrastrado = true;
+            }
+        });
+
+        window.addEventListener("mouseup", function() {
+            estaArrastrando = false;
+        });
+
+        function aplicarTransformacion() {
+            contenedorZoom.style.transform = `translate(${pX}px, ${pY}px) scale(${escala})`;
+        }
+
+        function resetZoom() {
+            escala = 1; pX = 0; pY = 0;
+            aplicarTransformacion();
+        }
+
+        function actualizarEstado() {
+            textoEstado.innerText = `Mapeando: Lote ${contadorLote} (Clic ${puntos.length + 1}/4)`;
+        }
+
+        function manejarClic(e) {
+            if (fueArrastrado) return;
+
+            // Conversión matemática exacta mediante matriz SVG (inmune a zoom y pan)
+            let pt = svg.createSVGPoint();
+            pt.x = e.clientX;
+            pt.y = e.clientY;
+            let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+            
+            let x = svgP.x;
+            let y = svgP.y;
+            
+            let ptsString = `${x.toFixed(1)},${y.toFixed(1)}`;
+            puntos.push(ptsString);
+            poligonoTemp.setAttribute("points", puntos.join(" "));
+
+            if (puntos.length === 4) {
+                let prefijo = document.getElementById("prefijo").value;
+                let codigoId = `${prefijo}${contadorLote}`;
+                let puntosStrUnidos = puntos.join(" ");
+                let codigo = `<polygon id="${codigoId}" class="lote" points="${puntosStrUnidos}" onclick="gestionarVenta(this)"></polygon>\n`;
+                
+                salida.value += codigo;
+                
+                lotesGuardados.push({
+                    id: codigoId,
+                    puntosArray: puntosStrUnidos,
+                    codigoHtml: codigo
+                });
+
+                sincronizarMemoria();
+                dibujarPoligonoVisual(codigoId, puntosStrUnidos, codigo);
+                
+                contadorLote++;
+                puntos = [];
+                poligonoTemp.setAttribute("points", "");
+                sincronizarMemoria();
+            }
+            actualizarEstado();
+        }
+
+        function dibujarPoligonoVisual(codigoId, puntosStrUnidos, codigoHtml) {
+            let loteTerminado = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            loteTerminado.setAttribute("id", codigoId);
+            loteTerminado.setAttribute("points", puntosStrUnidos);
+            loteTerminado.setAttribute("fill", "rgba(0, 255, 0, 0.25)");
+            loteTerminado.setAttribute("stroke", "#00ff00");
+            loteTerminado.setAttribute("stroke-width", "0.8");
+
+            loteTerminado.addEventListener("contextmenu", function(ev) {
+                ev.preventDefault(); 
+                if (confirm(`¿Deseas eliminar este lote (${codigoId})?`)) {
+                    loteTerminado.remove();
+                    salida.value = salida.value.replace(codigoHtml, "");
+                    lotesGuardados = lotesGuardados.filter(l => l.id !== codigoId);
+                    sincronizarMemoria();
+                }
+            });
+
+            svg.insertBefore(loteTerminado, poligonoTemp);
+        }
+
+        function sincronizarMemoria() {
+            localStorage.setItem("mapa_lotes_guardados", JSON.stringify(lotesGuardados));
+            localStorage.setItem("mapa_contador", contadorLote);
+            localStorage.setItem("mapa_codigo", salida.value);
+        }
+
+        function deshacerUltimo() {
+            if(puntos.length > 0) {
+                puntos.pop();
+                poligonoTemp.setAttribute("points", puntos.join(" "));
+                actualizarEstado();
+            }
+        }
+
+        function borrarTodo() {
+            if(confirm("¿Estás seguro de borrar todo el progreso guardado?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

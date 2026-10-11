@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mapeador Premium GPS (Precisión Total)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; display: flex; font-family: Arial; background: #1e1e1e; color: white; height: 100vh; overflow: hidden; }
+        #mapa { width: 75%; height: 100vh; }
+        .panel-control { width: 25%; padding: 20px; background: #2c3e50; display: flex; flex-direction: column; z-index: 1000; box-shadow: -5px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
+        textarea { width: 100%; height: 120px; margin-top: 15px; font-family: monospace; font-size: 11px; background: #000; color: #0f0; border: 1px solid #555; padding: 10px; }
+        h3 { margin-top: 0; color: #2ecc71; }
+        .estado { font-size: 14px; font-weight: bold; margin: 10px 0; color: #f1c40f; }
+        .botones-grupo { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;}
+        .botones-grupo button { flex: 1; padding: 8px; background: #34495e; color: white; border: 1px solid #555; cursor: pointer; min-width: 45%;}
+        .btn-borrar-todo { background: #c0392b !important; }
+        .btn-anclas { background: #2980b9 !important; font-weight: bold;}
+        input[type="range"], input[type="text"] { width: 100%; box-sizing: border-box; margin: 5px 0 10px 0; }
+        .instrucciones { font-size: 12px; color: #bdc3c7; line-height: 1.4; margin-bottom: 10px;}
+        
+        /* FORZAR CURSOR DE PRECISIÓN (CRUZ) */
+        .leaflet-container, .leaflet-grab, .leaflet-interactive { cursor: crosshair !important; }
+        .leaflet-dragging .leaflet-grab, .leaflet-dragging .leaflet-grab .leaflet-interactive { cursor: crosshair !important; }
+    </style>
+</head>
+<body>
+
+    <div id="mapa"></div>
+
+    <div class="panel-control">
+        <h3>Mapeador GPS de Precisión</h3>
+        
+        <p class="instrucciones">
+            <b>1.</b> Usa los marcadores y la rotación para calzar el plano.<br>
+            <b>2.</b> Presiona "Bloquear Plano" para evitar moverlo.<br>
+            <b>3.</b> Dibuja con la mira de precisión (+).
+        </p>
+        
+        <label>Transparencia del Plano:</label>
+        <input type="range" id="opacidadPlano" min="0" max="1" step="0.1" value="0.5" oninput="cambiarOpacidad(this.value)">
+
+        <label>Rotación del Plano (°):</label>
+        <input type="range" id="rotacionPlano" min="-180" max="180" step="0.5" value="0" oninput="cambiarRotacion(this.value)">
+
+        <button class="btn-anclas" id="btnBloquear" onclick="alternarAnclas()">Bloquear / Fijar Plano</button>
+
+        <label style="margin-top:15px;">Prefijo del Lote:</label>
+        <input type="text" id="prefijo" value="Manzana_1_Lote_" style="padding: 8px;">
+        
+        <div class="estado" id="textoEstado">Mapeando: Lote 1 (Clic 1/4)</div>
+        
+        <div class="botones-grupo">
+            <button onclick="deshacerUltimo()">Deshacer Clic</button>
+            <button class="btn-borrar-todo" onclick="borrarTodo()">Borrar Todo</button>
+        </div>
+        
+        <textarea id="codigoSalida" placeholder="Tu código GPS para los lotes aparecerá aquí..."></textarea>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const mapa = L.map('mapa').setView([-25.665706, -56.937467], 17);
+
+        L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+            maxZoom: 21,
+            subdomains:['mt0','mt1','mt2','mt3']
+        }).addTo(mapa);
+
+        // --- SISTEMA PARA ARRASTRAR EL PLANO ---
+        const urlPlano = 'plano.jpg'; 
+        let esquinaSuperiorIzq = L.latLng(-25.663706, -56.939467);
+        let esquinaInferiorDer = L.latLng(-25.667706, -56.935467);
+        let limitesPlano = L.latLngBounds(esquinaSuperiorIzq, esquinaInferiorDer);
+        
+        let superposicion = L.imageOverlay(urlPlano, limitesPlano, { opacity: 0.5 }).addTo(mapa);
+
+        let ancla1 = L.marker(esquinaSuperiorIzq, {draggable: true}).addTo(mapa);
+        let ancla2 = L.marker(esquinaInferiorDer, {draggable: true}).addTo(mapa);
+
+        function actualizarLimites() {
+            let nuevosLimites = L.latLngBounds(ancla1.getLatLng(), ancla2.getLatLng());
+            superposicion.setBounds(nuevosLimites);
+        }
+
+        ancla1.on('drag', actualizarLimites);
+        ancla2.on('drag', actualizarLimites);
+
+        function cambiarOpacidad(valor) { superposicion.setOpacity(valor); }
+
+        // --- SISTEMA DE ROTACIÓN AVANZADA ---
+        let rotacionActual = 0;
+        function cambiarRotacion(valor) {
+            rotacionActual = valor;
+            aplicarRotacionVisual();
+        }
+
+        function aplicarRotacionVisual() {
+            let img = superposicion.getElement();
+            if(!img) return;
+            let transformBase = img.style.transform;
+            if(!transformBase.includes('rotate')) {
+                img.style.transform = transformBase + ` rotate(${rotacionActual}deg)`;
+            } else {
+                img.style.transform = transformBase.replace(/rotate\([^)]+\)/, `rotate(${rotacionActual}deg)`);
+            }
+        }
+
+        // Evita que Leaflet borre la rotación al hacer zoom o mover el mapa
+        superposicion.on('add', () => {
+            let img = superposicion.getElement();
+            let observador = new MutationObserver((mutations) => {
+                mutations.forEach((m) => {
+                    if (m.attributeName === 'style') {
+                        let t = img.style.transform;
+                        if (!t.includes('rotate') && rotacionActual != 0) {
+                            img.style.transform = t + ` rotate(${rotacionActual}deg)`;
+                        }
+                    }
+                });
+            });
+            observador.observe(img, { attributes: true });
+        });
+
+        let anclasVisibles = true;
+        function alternarAnclas() {
+            if(anclasVisibles) {
+                mapa.removeLayer(ancla1);
+                mapa.removeLayer(ancla2);
+                document.getElementById("btnBloquear").innerText = "Desbloquear Plano";
+                document.getElementById("btnBloquear").style.background = "#27ae60";
+            } else {
+                ancla1.addTo(mapa);
+                ancla2.addTo(mapa);
+                document.getElementById("btnBloquear").innerText = "Bloquear / Fijar Plano";
+                document.getElementById("btnBloquear").style.background = "#2980b9";
+            }
+            anclasVisibles = !anclasVisibles;
+        }
+
+        // --- SISTEMA DE DIBUJO DE ALTA PRECISIÓN ---
+        let coordenadasPoligono = [];
+        let contadorLote = 1;
+        let poligonosDibujados = [];
+        let puntosMarcadores = [];
+        const salida = document.getElementById("codigoSalida");
+        const textoEstado = document.getElementById("textoEstado");
+
+        mapa.on('click', function(e) {
+            if(e.originalEvent.target.classList.contains('leaflet-marker-icon')) return;
+
+            let lat = e.latlng.lat;
+            let lng = e.latlng.lng;
+            coordenadasPoligono.push([lat, lng]);
+
+            // PUNTOS MINIATURA (Amarillos y muy finos para precisión)
+            let marcador = L.circleMarker([lat, lng], {radius: 2, color: '#f1c40f', fillColor: '#f1c40f', fillOpacity: 1, weight: 1}).addTo(mapa);
+            puntosMarcadores.push(marcador);
+
+            actualizarEstado();
+
+            if (coordenadasPoligono.length === 4) {
+                generarLote();
+            }
+        });
+
+        function generarLote() {
+            let prefijo = document.getElementById("prefijo").value;
+            let codigoId = `${prefijo}${contadorLote}`;
+            
+            let nuevoPoligono = L.polygon(coordenadasPoligono, {color: '#00ff00', fillColor: '#00ff00', fillOpacity: 0.4, weight: 1.5}).addTo(mapa);
+            poligonosDibujados.push(nuevoPoligono);
+
+            puntosMarcadores.forEach(m => mapa.removeLayer(m));
+            puntosMarcadores = [];
+
+            let coordString = JSON.stringify(coordenadasPoligono);
+            let codigoGenerado = `crearLote("${codigoId}", ${coordString});\n`;
+            salida.value += codigoGenerado;
+            
+            contadorLote++;
+            coordenadasPoligono = [];
+            actualizarEstado();
+        }
+
+        function actualizarEstado() { textoEstado.innerText = `Mapeando: Lote ${contadorLote} (Clic ${coordenadasPoligono.length + 1}/4)`; }
+
+        function deshacerUltimo() {
+            if (coordenadasPoligono.length > 0) {
+                coordenadasPoligono.pop();
+                let ultimoMarcador = puntosMarcadores.pop();
+                mapa.removeLayer(ultimoMarcador);
+                actualizarEstado();
+            }
+        }
+
+        function borrarTodo() {
+            if (confirm("¿Estás seguro? Se borrará todo el código que copiaste.")) {
+                salida.value = "";
+                contadorLote = 1;
+                poligonosDibujados.forEach(p => mapa.removeLayer(p));
+                puntosMarcadores.forEach(m => mapa.removeLayer(m));
+                poligonosDibujados = [];
+                puntosMarcadores = [];
+                coordenadasPoligono = [];
+                actualizarEstado();
+            }
+        }
+    </script>
+</body>
+</html>
