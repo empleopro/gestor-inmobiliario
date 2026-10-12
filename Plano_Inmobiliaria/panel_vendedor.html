@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ventas - Portal Inmobiliario</title>
+    <style>
+        :root {
+            --bg-body: #111827; /* Carbón oscuro */
+            --bg-panel: #1f2937; /* Grafito */
+            --border-color: #374151;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --btn-color: #2563eb; /* Azul corporativo */
+            --btn-hover: #1d4ed8;
+            --input-bg: #111827;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .panel { background: var(--bg-panel); padding: 40px; border-radius: 8px; border: 1px solid var(--border-color); width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); box-sizing: border-box; }
+        
+        .header-panel { border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
+        h2 { font-size: 1.3rem; font-weight: 600; margin: 0 0 5px 0; color: var(--text-main); }
+        .subtitulo { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+        
+        label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 0.95rem; outline: none; transition: border 0.2s; }
+        input:focus, select:focus { border-color: var(--btn-color); }
+        
+        .fila-doble { display: flex; gap: 15px; }
+        .mitad { flex: 1; }
+        
+        button { width: 100%; padding: 14px; background: var(--btn-color); color: white; font-weight: 600; font-size: 1rem; border: none; border-radius: 6px; cursor: pointer; margin-top: 30px; transition: background 0.2s; }
+        button:hover { background: var(--btn-hover); }
+        
+        #estadoConexion { margin-top: 20px; font-size: 0.85rem; text-align: center; min-height: 20px; color: var(--text-muted); }
+        .aviso-seguridad { font-size: 0.75rem; color: #6b7280; margin-top: 10px; font-style: italic; display: flex; align-items: center; gap: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <div class="header-panel">
+            <h2>Módulo de Ventas</h2>
+            <p class="subtitulo">Registro oficial de operaciones</p>
+        </div>
+
+        <div class="fila-doble">
+            <div class="mitad">
+                <label>Manzana</label>
+                <input type="number" id="inputManzana" value="1">
+            </div>
+            <div class="mitad">
+                <label>Nº de Lote</label>
+                <input type="number" id="inputLote" placeholder="Ej: 5">
+            </div>
+        </div>
+
+        <label>Comprador Titular</label>
+        <input type="text" id="inputComprador" placeholder="Nombre completo">
+
+        <label>Documento (C.I.)</label>
+        <input type="text" id="inputCI" placeholder="Sin puntos">
+
+        <label>Estado de Operación</label>
+        <select id="selectEstado">
+            <option value="vendido">Operación Cerrada (Vendido)</option>
+        </select>
+        
+        <div class="aviso-seguridad">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+            Reversión sujeta a autorización gerencial.
+        </div>
+
+        <button id="btnGuardar">Procesar Venta</button>
+        
+        <div id="estadoConexion">Sistema listo para registro.</div>
+    </div>
+
+    <!-- Módulos de Firebase -->
+ <!-- Módulos de Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg6rZnqUFgTcRiAHA0AWvYR-imovVb_0s",
+            authDomain: "gestorinmobiliario-d68b3.firebaseapp.com",
+            databaseURL: "https://gestorinmobiliario-d68b3-default-rtdb.firebaseio.com",
+            projectId: "gestorinmobiliario-d68b3",
+            storageBucket: "gestorinmobiliario-d68b3.firebasestorage.app",
+            messagingSenderId: "927434078075",
+            appId: "1:927434078075:web:95bd3c4e6720bcd282afde"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        document.getElementById('btnGuardar').addEventListener('click', () => {
+            const numManzana = document.getElementById('inputManzana').value;
+            const numLote = document.getElementById('inputLote').value;
+            const comprador = document.getElementById('inputComprador').value;
+            const ciComprador = document.getElementById('inputCI').value;
+            const estado = document.getElementById('selectEstado').value;
+            const mensajeDiv = document.getElementById('estadoConexion');
+
+            if (!numManzana || !numLote || !comprador || !ciComprador) {
+                mensajeDiv.innerText = "Error: Faltan datos requeridos.";
+                mensajeDiv.style.color = "#ef4444";
+                return;
+            }
+
+            mensajeDiv.innerText = "Procesando...";
+            mensajeDiv.style.color = "#9ca3af";
+
+            // Formatear la fecha actual de manera legible
+            const fechaActual = new Date();
+            const fechaFormateada = fechaActual.toLocaleString('es-PY', { 
+                day: '2-digit', month: '2-digit', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+
+            set(ref(db, `lotes/Manzana_${numManzana}_Lote_${numLote}`), {
+                estado: estado,
+                comprador: comprador,
+                ci: ciComprador,
+                fecha_venta: fechaFormateada, // Guardamos la fecha legible
+                timestamp: fechaActual.getTime() // Guardamos el tiempo técnico por si necesitamos ordenar
+            }).then(() => {
+                mensajeDiv.innerText = `Operación registrada exitosamente (MZ ${numManzana} - LT ${numLote})`;
+                mensajeDiv.style.color = "#10b981";
+                document.getElementById('inputLote').value = '';
+                document.getElementById('inputComprador').value = '';
+                document.getElementById('inputCI').value = '';
+            }).catch((error) => {
+                mensajeDiv.innerText = "Error del sistema: " + error.message;
+                mensajeDiv.style.color = "#ef4444";
+            });
+        });
+    </script>
+</body>
+</html>

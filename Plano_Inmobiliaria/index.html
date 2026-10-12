@@ -8,18 +8,16 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --primary: #1e293b;
-            --accent: #0284c7;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #059669;
-            --info: #2563eb;
-            --bg-panel: #ffffff;
-            --text-main: #334155;
-            --text-muted: #64748b;
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --success: #065f46; /* Verde profesional */
+            --danger: #991b1b;  /* Rojo corporativo */
+            --bg-panel: #1f2937; 
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
         }
 
-        body { margin: 0; padding: 0; display: flex; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0f172a; color: var(--text-main); height: 100vh; overflow: hidden; }
+        body { margin: 0; padding: 0; display: flex; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #111827; color: var(--text-main); height: 100vh; overflow: hidden; }
         
         #map { width: 72%; height: 100vh; }
         
@@ -29,26 +27,24 @@
             padding: 30px 20px; 
             box-sizing: border-box; 
             overflow-y: auto; 
-            box-shadow: -10px 0 30px rgba(0,0,0,0.15); 
+            border-left: 1px solid #374151;
             z-index: 1000; 
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
         
-        .header-proyecto h1 { color: var(--primary); font-size: 1.4rem; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px; }
-        .header-proyecto p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.4; margin-bottom: 20px; }
+        .header-proyecto h1 { color: var(--text-main); font-size: 1.3rem; font-weight: 600; margin: 0 0 5px 0; }
+        .header-proyecto p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 20px; }
         
-        .leyenda { background: #f8fafc; padding: 14px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .leyenda-titulo { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; display: block; }
-        .leyenda-item { display: flex; align-items: center; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--primary); }
+        .leyenda { background: #111827; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #374151; }
+        .leyenda-titulo { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; display: block; }
+        .leyenda-item { display: flex; align-items: center; margin-bottom: 8px; font-weight: 500; font-size: 0.85rem; color: var(--text-main); }
         .leyenda-item:last-child { margin-bottom: 0; }
-        .caja-color { width: 14px; height: 14px; margin-right: 10px; border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .caja-color { width: 12px; height: 12px; margin-right: 10px; border-radius: 2px; }
         
         .color-libre { background: #10b981; }
         .color-vendido { background: #ef4444; }
-        .color-verde { background: #059669; } 
-        .color-recuperado { background: #2563eb; } 
         
         .acciones-container { margin-top: auto; padding-top: 15px; }
         
@@ -60,44 +56,47 @@
             width: 100%; 
             padding: 12px; 
             text-decoration: none; 
-            border-radius: 8px; 
-            font-weight: 700; 
+            border-radius: 6px; 
+            font-weight: 600; 
             font-size: 0.9rem; 
             margin-bottom: 10px; 
-            transition: all 0.2s ease; 
             box-sizing: border-box; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            transition: opacity 0.2s;
         }
+        .btn:hover { opacity: 0.9; }
         
-        .btn-maps { background: #ffffff; color: var(--primary); border: 2px solid #e2e8f0; }
-        .btn-maps:hover { background: #f8fafc; border-color: var(--accent); color: var(--accent); }
-        
-        .btn-whatsapp { background: #22c55e; color: white; border: none; }
-        .btn-whatsapp:hover { background: #16a34a; }
+        .btn-maps { background: #374151; color: white; border: 1px solid #4b5563; }
+        .btn-whatsapp { background: #059669; color: white; border: none; }
 
         .etiqueta-lote { 
-            background: rgba(15, 23, 42, 0.85); 
-            backdrop-filter: blur(4px);
-            border-radius: 20px; 
+            background: rgba(17, 24, 39, 0.85); 
+            border-radius: 4px; 
             color: white; 
-            font-weight: 700; 
+            font-weight: 600; 
             text-align: center; 
-            line-height: 22px; 
-            width: 28px !important; 
-            height: 22px !important; 
-            border: 1px solid rgba(255,255,255,0.3); 
+            line-height: 20px; 
+            width: 26px !important; 
+            height: 20px !important; 
+            border: 1px solid rgba(255,255,255,0.2); 
             font-size: 11px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
         }
 
         .footer-marca { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; }
 
+        /* Estilo profesional para el cuadro de información al hacer clic en el lote */
+        .leaflet-popup-content-wrapper { background: #1f2937 !important; color: #f9fafb !important; border-radius: 6px !important; border: 1px solid #374151; }
+        .leaflet-popup-tip { background: #1f2937 !important; }
+        .popup-info h3 { margin: 0 0 8px 0; font-size: 1rem; color: #38bdf8; border-bottom: 1px solid #374151; padding-bottom: 5px; }
+        .popup-info p { margin: 4px 0; font-size: 0.85rem; color: #d1d5db; }
+        .popup-estado { font-weight: bold; margin-top: 10px; display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; text-transform: uppercase; }
+        .popup-estado.libre { background: #065f46; color: #6ee7b7; }
+        .popup-estado.vendido { background: #991b1b; color: #fca5a5; }
+        .precio-destacado { color: #10b981; font-weight: 700; font-size: 0.95rem; }
+
         @media (max-width: 768px) {
             body { flex-direction: column; }
             #map { width: 100%; height: 55vh; }
-            #panel { width: 100%; height: 45vh; padding: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); }
-            .header-proyecto p { display: none; } 
-            .leyenda { margin-bottom: 10px; padding: 10px; }
+            #panel { width: 100%; height: 45vh; padding: 20px; }
         }
     </style>
 </head>
@@ -108,43 +107,40 @@
     <div id="panel">
         <div class="header-proyecto">
             <h1>Loteamiento Sapucai</h1>
-            <p>Descubre tu próximo terreno con posesión inmediata.</p>
+            <p>Seleccione un terreno en el plano para consultar medidas, precio y disponibilidad.</p>
             
             <div class="leyenda">
-                <span class="leyenda-titulo">Estado de los Lotes</span>
+                <span class="leyenda-titulo">Disponibilidad</span>
                 <div class="leyenda-item">
-                    <div class="caja-color color-libre"></div> Disponibles
+                    <div class="caja-color color-libre"></div> Disponible
                 </div>
                 <div class="leyenda-item">
-                    <div class="caja-color color-vendido"></div> Vendidos
-                </div>
-                <div class="leyenda-item">
-                    <div class="caja-color color-verde"></div> Espacios Verdes
-                </div>
-                <div class="leyenda-item">
-                    <div class="caja-color color-recuperado"></div> Lotes Recuperados
+                    <div class="caja-color color-vendido"></div> Vendido
                 </div>
             </div>
         </div>
 
         <div class="acciones-container">
-            <!-- GPS actualizado con la nueva coordenada exacta de la captura -->
             <a href="https://www.google.com/maps/search/?api=1&query=-25.665706,-56.937467" target="_blank" class="btn btn-maps">
-                📍 Ver Ubicación en GPS
+                📍 Ver Ubicación GPS
             </a>
             
-            <!-- WhatsApp vinculado al número del propietario -->
-            <a href="https://wa.me/595985480685?text=Hola,%20me%20interesa%20obtener%20más%20información%20sobre%20los%20lotes%20en%20Sapucai" target="_blank" class="btn btn-whatsapp">
+            <a href="https://wa.me/595985480685?text=Hola,%20me%20interesa%20obtener%20más%20información%20sobre%20los%20lotes%20disponibles" target="_blank" class="btn btn-whatsapp">
                 💬 Consultar por WhatsApp
             </a>
             
-            <div class="footer-marca">Gestión Inmobiliaria Profesional</div>
+            <div class="footer-marca">Portal Inmobiliario Automatizado</div>
         </div>
     </div>
 
     <!-- JS de Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
+    
+    <!-- Módulos de Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
         const map = L.map('map', { zoomControl: false });
         L.control.zoom({ position: 'topleft' }).addTo(map);
 
@@ -152,75 +148,107 @@
             maxZoom: 21, attribution: '© Google Maps'
         }).addTo(map);
 
+        // BASE DE DATOS DE MEDIDAS, METROS CUADRADOS Y PRECIOS DE CADA LOTE
+        const baseDatosLotesInfo = {
+            "Manzana_1_Lote_1": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_2": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_3": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_4": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_5": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 145.000.000" },
+            "Manzana_1_Lote_6": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 135.000.000" },
+            "Manzana_1_Lote_7": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 135.000.000" },
+            "Manzana_1_Lote_8": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_9": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_10": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Consultar al asesor" },
+            "Manzana_1_Lote_11": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" }
+        };
+
+        // COORDENADAS DE LOS LOTES DE SAPUCAI
         const textoCoordenadas = `
-// Manzana_1_Lote_1 (LIBRE)
+// Manzana_1_Lote_1
 P1: -25.668092, -56.938836
 P2: -25.668149, -56.938577
 P3: -25.667981, -56.938516
 P4: -25.667924, -56.938774
 
-// Manzana_1_Lote_2 (LIBRE)
+// Manzana_1_Lote_2
 P1: -25.667924, -56.938774
 P2: -25.667755, -56.938713
 P3: -25.667810, -56.938455
 P4: -25.667981, -56.938516
 
-// Manzana_1_Lote_3 (LIBRE)
+// Manzana_1_Lote_3
 P1: -25.668166, -56.938499
 P2: -25.667938, -56.938417
 P3: -25.667984, -56.938211
 P4: -25.668214, -56.938287
 
-// Manzana_1_Lote_4 (LIBRE)
+// Manzana_1_Lote_4
 P1: -25.667709, -56.938333
 P2: -25.667938, -56.938417
 P3: -25.667984, -56.938211
 P4: -25.667752, -56.938132
 
-// Manzana_1_Lote_5 (VENDIDO)
+// Manzana_1_Lote_5
 P1: -25.668235, -56.938181
 P2: -25.668008, -56.938103
 P3: -25.668054, -56.937898
 P4: -25.668284, -56.937968
 
-// Manzana_1_Lote_6 (VENDIDO)
+// Manzana_1_Lote_6
 P1: -25.668008, -56.938103
 P2: -25.668054, -56.937898
 P3: -25.667819, -56.937820
 P4: -25.667776, -56.938023
 
-// Manzana_1_Lote_7 (VENDIDO)
+// Manzana_1_Lote_7
 P1: -25.667776, -56.938023
 P2: -25.667819, -56.937820
 P3: -25.667582, -56.937744
 P4: -25.667537, -56.937942
 
-// Manzana_1_Lote_8 (VENDIDO)
+// Manzana_1_Lote_8
 P1: -25.667784, -56.937728
 P2: -25.667839, -56.937472
 P3: -25.667669, -56.937414
 P4: -25.667612, -56.937671
 
-// Manzana_1_Lote_9 (LIBRE)
+// Manzana_1_Lote_9
 P1: -25.667784, -56.937728
 P2: -25.667839, -56.937472
 P3: -25.668014, -56.937527
 P4: -25.667956, -56.937781
 
-// Manzana_1_Lote_10 (LIBRE)
+// Manzana_1_Lote_10
 P1: -25.667956, -56.937781
 P2: -25.668014, -56.937527
 P3: -25.668186, -56.937579
 P4: -25.668132, -56.937839
 
-// Manzana_1_Lote_11 (LIBRE)
+// Manzana_1_Lote_11
 P1: -25.668186, -56.937579
 P2: -25.668132, -56.937839
 P3: -25.668298, -56.937895
 P4: -25.668356, -56.937638
         `;
 
-        function dibujarLotesParaCliente(texto) {
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg6rZnqUFgTcRiAHA0AWvYR-imovVb_0s",
+            authDomain: "gestorinmobiliario-d68b3.firebaseapp.com",
+            databaseURL: "https://gestorinmobiliario-d68b3-default-rtdb.firebaseio.com",
+            projectId: "gestorinmobiliario-d68b3",
+            storageBucket: "gestorinmobiliario-d68b3.firebasestorage.app",
+            messagingSenderId: "927434078075",
+            appId: "1:927434078075:web:95bd3c4e6720bcd282afde"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let poligonosDibujados = {};
+        // Guardaremos el estado actual de cada lote para mostrar en el popup al hacer clic
+        let estadosLotes = {}; 
+
+        function dibujarLotesBase(texto) {
             let bloques = texto.split('//').filter(b => b.trim() !== '');
             let todosLosPuntos = []; 
 
@@ -229,12 +257,8 @@ P4: -25.668356, -56.937638
                 if (lineas.length === 0) return;
 
                 let titulo = lineas[0];
-                let estado = 'libre';
-                if (titulo.includes('VENDIDO')) estado = 'vendido';
-                else if (titulo.includes('VERDE')) estado = 'verde';
-                else if (titulo.includes('RECUPERADO') || titulo.includes('AZUL')) estado = 'recuperado';
-                
-                let numeroMatch = titulo.match(/Lote_(\d+)/i) || titulo.match(/(\d+)/);
+                let nombreLote = titulo.trim(); // Ej: Manzana_1_Lote_5
+                let numeroMatch = nombreLote.match(/Lote_(\d+)/i) || nombreLote.match(/(\d+)/);
                 let numLote = numeroMatch ? numeroMatch[1] : "";
 
                 let puntos = [];
@@ -249,18 +273,38 @@ P4: -25.668356, -56.937638
                 }
 
                 if (puntos.length >= 3) {
-                    let colorFondo = '#10b981'; 
-                    if (estado === 'vendido') colorFondo = '#ef4444'; 
-                    else if (estado === 'verde') colorFondo = '#059669'; 
-                    else if (estado === 'recuperado') colorFondo = '#2563eb'; 
+                    estadosLotes[nombreLote] = 'libre'; // Por defecto libre
 
                     let poligono = L.polygon(puntos, {
-                        color: '#ffffff', weight: 2, dashArray: '4, 4', fillColor: colorFondo, fillOpacity: 0.65
+                        color: '#ffffff', weight: 1.5, dashArray: '3, 3', fillColor: '#10b981', fillOpacity: 0.6
                     }).addTo(map);
+
+                    // ACCIÓN AL HACER CLIC EN EL TERRENO
+                    poligono.on('click', function(e) {
+                        let info = baseDatosLotesInfo[nombreLote] || { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Consultar" };
+                        let estadoActual = estadosLotes[nombreLote] === 'vendido' ? 'Vendido' : 'Disponible';
+                        let claseEstado = estadosLotes[nombreLote] === 'vendido' ? 'vendido' : 'libre';
+                        
+                        let tituloFormateado = nombreLote.replace('Manzana_', 'Manzana ').replace('_Lote_', ' - Lote ');
+
+                        let contenidoPopup = `
+                            <div class="popup-info">
+                                <h3>${tituloFormateado}</h3>
+                                <p>📏 Frente: <b>${info.frente}</b></p>
+                                <p>📐 Fondo: <b>${info.fondo}</b></p>
+                                <p>🔲 Superficie: <b>${info.m2}</b></p>
+                                <p>💰 Precio: <span class="precio-destacado">${info.precio}</span></p>
+                                <span class="popup-estado ${claseEstado}">${estadoActual}</span>
+                            </div>
+                        `;
+                        L.popup().setLatLng(e.latlng).setContent(contenidoPopup).openOn(map);
+                    });
+
+                    poligonosDibujados[nombreLote] = poligono;
 
                     if (numLote !== "") {
                         let centro = poligono.getBounds().getCenter();
-                        let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [28, 22], iconAnchor: [14, 11] });
+                        let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [26, 20], iconAnchor: [13, 10] });
                         L.marker(centro, {icon: iconoNumero}).addTo(map);
                     }
                 }
@@ -271,7 +315,36 @@ P4: -25.668356, -56.937638
             }
         }
 
-        dibujarLotesParaCliente(textoCoordenadas);
+        dibujarLotesBase(textoCoordenadas);
+
+        // ESCUCHAMOS A FIREBASE PARA ACTUALIZAR COLORES Y ESTADOS PÚBLICOS
+        const referenciaTodosLosLotes = ref(db, 'lotes');
+        
+        onValue(referenciaTodosLosLotes, (snapshot) => {
+            const lotesEnBaseDeDatos = snapshot.val();
+            
+            // Primero ponemos todo verde por defecto
+            for (let nombreLote in poligonosDibujados) {
+                estadosLotes[nombreLote] = 'libre';
+                poligonosDibujados[nombreLote].setStyle({ fillColor: '#10b981' });
+            }
+
+            if (lotesEnBaseDeDatos) {
+                for (const nombreLote in lotesEnBaseDeDatos) {
+                    const datos = lotesEnBaseDeDatos[nombreLote];
+                    
+                    if (poligonosDibujados[nombreLote]) {
+                        if (datos.estado === 'vendido' || datos.estado === 'recuperado') {
+                            estadosLotes[nombreLote] = 'vendido';
+                            poligonosDibujados[nombreLote].setStyle({ fillColor: '#ef4444' }); // Rojo
+                        } else {
+                            estadosLotes[nombreLote] = 'libre';
+                            poligonosDibujados[nombreLote].setStyle({ fillColor: '#10b981' }); // Verde
+                        }
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
