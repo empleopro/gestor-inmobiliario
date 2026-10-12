@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Gerencial Propietario | Loteamiento Sapucai</title>
-    <!-- CSS de Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -24,7 +23,7 @@
         #panel { 
             width: 45%; 
             background: var(--bg-panel); 
-            padding: 20px; 
+            padding: 15px; 
             box-sizing: border-box; 
             overflow-y: auto; 
             border-left: 1px solid #374151;
@@ -34,60 +33,78 @@
             justify-content: space-between;
         }
         
-        .header-panel h1 { color: #38bdf8; font-size: 1.2rem; font-weight: 600; margin: 0 0 5px 0; }
-        .header-panel p { color: var(--text-muted); font-size: 0.8rem; line-height: 1.3; margin-bottom: 15px; }
+        .header-panel h1 { color: #38bdf8; font-size: 1.1rem; font-weight: 600; margin: 0 0 3px 0; }
+        .header-panel p { color: var(--text-muted); font-size: 0.75rem; line-height: 1.2; margin-bottom: 10px; }
 
-        .btn-pdf { 
-            background: #059669; color: white; border: none; width: 100%; padding: 10px; 
-            border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s; margin-bottom: 15px;
-        }
-        .btn-pdf:hover { opacity: 0.9; }
+        .admin-box { background: #111827; padding: 12px; border-radius: 6px; border: 1px solid #374151; margin-bottom: 10px; }
+        .admin-box h3 { margin: 0 0 8px 0; font-size: 0.85rem; color: #38bdf8; }
+        
+        .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .form-group { flex: 1; }
+        .form-group label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px; }
+        .form-control { width: 100%; padding: 6px 8px; box-sizing: border-box; background: #1f2937; border: 1px solid #374151; color: white; border-radius: 4px; font-size: 0.8rem; }
+        
+        .btn-accion { background: #2563eb; color: white; border: none; width: 100%; padding: 8px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; cursor: pointer; }
+        .btn-accion:hover { background: #1d4ed8; }
+        
+        .btn-pdf { background: #059669; color: white; border: none; width: 100%; padding: 8px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; }
 
-        /* Tabla de control gerencial */
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: #111827; border-radius: 6px; overflow: hidden; }
-        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #374151; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; background: #111827; border-radius: 4px; overflow: hidden; }
+        th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #374151; }
         th { background: #374151; color: #38bdf8; font-weight: 600; }
-        tr:hover { background: rgba(255,255,255,0.02); }
 
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .badge { padding: 2px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
         .badge.vendido { background: #991b1b; color: #fca5a5; }
+        .badge.recuperado { background: #f59e0b; color: #000; }
         .badge.libre { background: #065f46; color: #6ee7b7; }
 
         .etiqueta-lote { 
-            background: rgba(17, 24, 39, 0.85); border-radius: 4px; color: white; font-weight: 600; 
-            text-align: center; line-height: 20px; width: 26px !important; height: 20px !important; 
-            border: 1px solid rgba(255,255,255,0.2); font-size: 11px; 
+            background: rgba(17, 24, 39, 0.9); border-radius: 4px; color: white; font-weight: 700; 
+            text-align: center; line-height: 22px; width: 28px !important; height: 22px !important; 
+            border: 1px solid rgba(255,255,255,0.3); font-size: 12px; 
         }
 
-        .footer-marca { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; }
-
-        /* Popups en el mapa del propietario */
-        .leaflet-popup-content-wrapper { background: #1f2937 !important; color: #f9fafb !important; border-radius: 6px !important; border: 1px solid #374151; }
-        .leaflet-popup-tip { background: #1f2937 !important; }
-        .popup-info h3 { margin: 0 0 5px 0; font-size: 0.95rem; color: #38bdf8; }
-        .popup-info p { margin: 3px 0; font-size: 0.8rem; color: #d1d5db; }
+        .footer-marca { text-align: center; font-size: 0.65rem; color: var(--text-muted); margin-top: 10px; }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            #map { width: 100%; height: 45vh; }
-            #panel { width: 100%; height: 55vh; padding: 15px; }
+            #map { width: 100%; height: 40vh; }
+            #panel { width: 100%; height: 60vh; padding: 12px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- MAPA INTERACTIVO PARA AUDITORÍA DEL PROPIETARIO -->
     <div id="map"></div>
 
-    <!-- PANEL GERENCIAL -->
     <div id="panel">
         <div>
             <div class="header-panel">
                 <h1>Panel Gerencial (Propietario)</h1>
-                <p>Auditoría en tiempo real de lotes y control general del proyecto.</p>
+                <p>Toque un lote para editar su precio o cambiar estado a Recuperado.</p>
             </div>
 
-            <button type="button" class="btn-pdf" onclick="window.print()">📥 Descargar / Imprimir Reporte PDF</button>
+            <!-- CUADRO DE EDICIÓN DEL PROPIETARIO -->
+            <div class="admin-box">
+                <h3 id="tituloEdicion">✏️ Seleccione un lote del mapa para editar</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Precio del Lote</label>
+                        <input type="text" id="editPrecio" class="form-control" placeholder="Ej: Gs. 120.000.000">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado del Lote</label>
+                        <select id="editEstado" class="form-control">
+                            <option value="libre">🟢 Disponible / Libre</option>
+                            <option value="recuperado">🟡 Recuperado</option>
+                            <option value="vendido">🔴 Vendido</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn-accion" onclick="guardarCambiosPropietario()">💾 Actualizar Lote en Tiempo Real</button>
+            </div>
+
+            <button type="button" class="btn-pdf" onclick="window.print()">📥 Imprimir / Descargar Reporte PDF</button>
 
             <div style="overflow-x: auto;">
                 <table>
@@ -95,29 +112,27 @@
                         <tr>
                             <th>Lote</th>
                             <th>Estado</th>
+                            <th>Precio</th>
+                            <th>Vendedor</th>
                             <th>Cliente</th>
-                            <th>C.I.</th>
                         </tr>
-                    <</thead>
+                    </thead>
                     <tbody id="tablaCuerpo">
                         <tr>
-                            <td colspan="4" style="text-align: center; color: #9ca3af;">Cargando datos en tiempo real...</td>
+                            <td colspan="5" style="text-align: center; color: #9ca3af;">Cargando datos...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="footer-marca">Centro de Control Autorizado - Loteamiento Sapucai</div>
+        <div class="footer-marca">Centro de Control Gerencial - Sapucai</div>
     </div>
 
-    <!-- JS de Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
         const map = L.map('map', { zoomControl: false });
         L.control.zoom({ position: 'topleft' }).addTo(map);
@@ -125,20 +140,6 @@
         L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
             maxZoom: 21, attribution: '© Google Maps'
         }).addTo(map);
-
-        const baseDatosLotesInfo = {
-            "Manzana_1_Lote_1": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
-            "Manzana_1_Lote_2": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
-            "Manzana_1_Lote_3": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
-            "Manzana_1_Lote_4": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
-            "Manzana_1_Lote_5": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 145.000.000" },
-            "Manzana_1_Lote_6": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 135.000.000" },
-            "Manzana_1_Lote_7": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 135.000.000" },
-            "Manzana_1_Lote_8": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
-            "Manzana_1_Lote_9": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
-            "Manzana_1_Lote_10": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Consultar" },
-            "Manzana_1_Lote_11": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" }
-        };
 
         const textoCoordenadas = `
 // Manzana_1_Lote_1
@@ -221,7 +222,7 @@ P4: -25.668356, -56.937638
         const db = getDatabase(app);
 
         let poligonosDibujados = {};
-        let estadosLotes = {};
+        let loteSeleccionadoAdmin = "";
 
         function dibujarLotesBase(texto) {
             let bloques = texto.split('//').filter(b => b.trim() !== '');
@@ -248,33 +249,28 @@ P4: -25.668356, -56.937638
                 }
 
                 if (puntos.length >= 3) {
-                    estadosLotes[nombreLote] = 'libre';
-
+                    // Alta sensibilidad táctil con borde más grueso y mayor opacidad
                     let poligono = L.polygon(puntos, {
-                        color: '#ffffff', weight: 1.5, dashArray: '3, 3', fillColor: '#10b981', fillOpacity: 0.6
+                        color: '#ffffff', weight: 2, dashArray: '3, 3', fillColor: '#10b981', fillOpacity: 0.65
                     }).addTo(map);
 
                     poligono.on('click', function(e) {
-                        let info = baseDatosLotesInfo[nombreLote] || { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Consultar" };
-                        let estadoActual = estadosLotes[nombreLote] === 'vendido' ? 'Vendido' : 'Disponible';
-                        let tituloFormateado = nombreLote.replace('Manzana_', 'Manzana ').replace('_Lote_', ' - Lote ');
+                        loteSeleccionadoAdmin = nombreLote;
+                        document.getElementById('tituloEdicion').innerText = `✏️ Editando: ${nombreLote.replace('_', ' ')}`;
 
-                        let contenidoPopup = `
-                            <div class="popup-info">
-                                <h3>${tituloFormateado}</h3>
-                                <p>📏 ${info.frente} x ${info.fondo} (${info.m2})</p>
-                                <p>💰 ${info.precio}</p>
-                                <p>📌 Estado: <b>${estadoActual}</b></p>
-                            </div>
-                        `;
-                        L.popup().setLatLng(e.latlng).setContent(contenidoPopup).openOn(map);
+                        const refLote = ref(db, 'lotes/' + nombreLote);
+                        onValue(refLote, (snapshot) => {
+                            const datos = snapshot.val() || {};
+                            document.getElementById('editPrecio').value = datos.precio || "Gs. 120.000.000";
+                            document.getElementById('editEstado').value = datos.estado || "libre";
+                        }, { onlyOnce: true });
                     });
 
                     poligonosDibujados[nombreLote] = poligono;
 
                     if (numLote !== "") {
                         let centro = poligono.getBounds().getCenter();
-                        let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [26, 20], iconAnchor: [13, 10] });
+                        let iconoNumero = L.divIcon({ className: 'etiqueta-lote', html: numLote, iconSize: [28, 22], iconAnchor: [14, 11] });
                         L.marker(centro, {icon: iconoNumero}).addTo(map);
                     }
                 }
@@ -287,39 +283,33 @@ P4: -25.668356, -56.937638
 
         dibujarLotesBase(textoCoordenadas);
 
-        // Sincronizar colores del mapa y actualizar tabla gerencial en tiempo real
         const referenciaTodosLosLotes = ref(db, 'lotes');
         onValue(referenciaTodosLosLotes, (snapshot) => {
-            const lotesEnBaseDeDatos = snapshot.val();
-            
-            for (let nombreLote in poligonosDibujados) {
-                estadosLotes[nombreLote] = 'libre';
-                poligonosDibujados[nombreLote].setStyle({ fillColor: '#10b981' });
-            }
-
+            const lotesEnBaseDeDatos = snapshot.val() || {};
             let htmlTabla = '';
-            
-            // Recorremos los lotes dibujados para armar la tabla gerencial completa
+
             for (let nombreLote in poligonosDibujados) {
-                let estado = 'libre';
-                let cliente = 'Disponible / Libre';
-                let ci = '-';
+                let datosLote = lotesEnBaseDeDatos[nombreLote] || {};
+                let estado = datosLote.estado || 'libre';
+                let precio = datosLote.precio || 'Gs. 120.000.000';
+                let vendedor = datosLote.vendedor || '-';
+                let cliente = datosLote.cliente || 'Disponible / Libre';
+
                 let claseBadge = 'libre';
                 let textoBadge = 'Disponible';
 
-                if (lotesEnBaseDeDatos && lotesEnBaseDeDatos[nombreLote]) {
-                    const datos = lotesEnBaseDeDatos[nombreLote];
-                    if (datos.estado === 'vendido' || datos.estado === 'recuperado') {
-                        estado = 'vendido';
-                        estadosLotes[nombreLote] = 'vendido';
-                        poligonosDibujados[nombreLote].setStyle({ fillColor: '#ef4444' });
-                        cliente = datos.cliente || 'Sin registrar';
-                        ci = datos.ci || '-';
-                        claseBadge = 'vendido';
-                        textoBadge = 'Vendido';
-                    } else {
-                        poligonosDibujados[nombreLote].setStyle({ fillColor: '#10b981' });
-                    }
+                if (estado === 'vendido') {
+                    poligonosDibujados[nombreLote].setStyle({ fillColor: '#ef4444' });
+                    claseBadge = 'vendido';
+                    textoBadge = 'Vendido';
+                } else if (estado === 'recuperado') {
+                    poligonosDibujados[nombreLote].setStyle({ fillColor: '#f59e0b' });
+                    claseBadge = 'recuperado';
+                    textoBadge = 'Recuperado';
+                } else {
+                    poligonosDibujados[nombreLote].setStyle({ fillColor: '#10b981' });
+                    cliente = 'Disponible / Libre';
+                    vendedor = '-';
                 }
 
                 let nombreCorto = nombreLote.replace('Manzana_', 'Mza ').replace('_Lote_', ' - L.: ');
@@ -328,14 +318,36 @@ P4: -25.668356, -56.937638
                     <tr>
                         <td><b>${nombreCorto}</b></td>
                         <td><span class="badge ${claseBadge}">${textoBadge}</span></td>
+                        <td>${precio}</td>
+                        <td>${vendedor}</td>
                         <td>${cliente}</td>
-                        <td>${ci}</td>
                     </tr>
                 `;
             }
 
             document.getElementById('tablaCuerpo').innerHTML = htmlTabla;
         });
+
+        window.guardarCambiosPropietario = function() {
+            if (!loteSeleccionadoAdmin) {
+                alert("Por favor seleccione un lote haciendo clic en el mapa primero.");
+                return;
+            }
+
+            const nuevoPrecio = document.getElementById('editPrecio').value;
+            const nuevoEstado = document.getElementById('editEstado').value;
+
+            const refLote = ref(db, 'lotes/' + loteSeleccionadoAdmin);
+            
+            update(refLote, {
+                precio: nuevoPrecio,
+                estado: nuevoEstado
+            }).then(() => {
+                alert("¡Lote actualizado correctamente por la gerencia!");
+            }).catch((error) => {
+                alert("Error al actualizar: " + error.message);
+            });
+        };
     </script>
 </body>
 </html>
