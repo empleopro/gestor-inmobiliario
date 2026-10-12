@@ -23,7 +23,7 @@
         #panel { 
             width: 45%; 
             background: var(--bg-panel); 
-            padding: 15px; 
+            padding: 12px 15px; 
             box-sizing: border-box; 
             overflow-y: auto; 
             border-left: 1px solid #374151;
@@ -33,43 +33,51 @@
             justify-content: space-between;
         }
         
-        .header-panel h1 { color: #38bdf8; font-size: 1.1rem; font-weight: 600; margin: 0 0 3px 0; }
-        .header-panel p { color: var(--text-muted); font-size: 0.75rem; line-height: 1.2; margin-bottom: 10px; }
+        .header-panel { margin-bottom: 6px; }
+        .header-panel h1 { color: #38bdf8; font-size: 1rem; font-weight: 600; margin: 0 0 2px 0; }
+        .header-panel p { color: #38bdf8; font-size: 0.75rem; line-height: 1.2; margin: 0; font-weight: 500; }
 
-        .admin-box { background: #111827; padding: 12px; border-radius: 6px; border: 1px solid #374151; margin-bottom: 10px; }
-        .admin-box h3 { margin: 0 0 8px 0; font-size: 0.85rem; color: #38bdf8; }
+        .admin-box { background: #111827; padding: 10px; border-radius: 6px; border: 1px solid #374151; margin-bottom: 8px; }
+        .admin-box h3 { margin: 0 0 6px 0; font-size: 0.8rem; color: #38bdf8; }
         
-        .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .form-row { display: flex; gap: 6px; margin-bottom: 6px; }
         .form-group { flex: 1; }
-        .form-group label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px; }
-        .form-control { width: 100%; padding: 6px 8px; box-sizing: border-box; background: #1f2937; border: 1px solid #374151; color: white; border-radius: 4px; font-size: 0.8rem; }
+        .form-group label { display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px; }
+        .form-control { width: 100%; padding: 6px; box-sizing: border-box; background: #1f2937; border: 1px solid #374151; color: white; border-radius: 4px; font-size: 0.75rem; }
         
-        .btn-accion { background: #2563eb; color: white; border: none; width: 100%; padding: 8px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; cursor: pointer; }
+        .btn-accion { background: #2563eb; color: white; border: none; width: 100%; padding: 7px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
         .btn-accion:hover { background: #1d4ed8; }
         
-        .btn-pdf { background: #059669; color: white; border: none; width: 100%; padding: 8px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; }
+        .btn-pdf { background: #059669; color: white; border: none; width: 100%; padding: 7px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; cursor: pointer; margin-bottom: 8px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; background: #111827; border-radius: 4px; overflow: hidden; }
-        th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #374151; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; background: #111827; border-radius: 4px; overflow: hidden; }
+        th, td { padding: 5px 6px; text-align: left; border-bottom: 1px solid #374151; }
         th { background: #374151; color: #38bdf8; font-weight: 600; }
 
-        .badge { padding: 2px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
+        .badge { padding: 2px 4px; border-radius: 3px; font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
         .badge.vendido { background: #991b1b; color: #fca5a5; }
-        .badge.recuperado { background: #f59e0b; color: #000; }
+        .badge.reservado { background: #f59e0b; color: #000; }
+        .badge.recuperado { background: #d97706; color: #fff; }
         .badge.libre { background: #065f46; color: #6ee7b7; }
 
         .etiqueta-lote { 
             background: rgba(17, 24, 39, 0.9); border-radius: 4px; color: white; font-weight: 700; 
-            text-align: center; line-height: 22px; width: 28px !important; height: 22px !important; 
-            border: 1px solid rgba(255,255,255,0.3); font-size: 12px; 
+            text-align: center; line-height: 20px; width: 26px !important; height: 20px !important; 
+            border: 1px solid rgba(255,255,255,0.3); font-size: 11px; 
         }
 
-        .footer-marca { text-align: center; font-size: 0.65rem; color: var(--text-muted); margin-top: 10px; }
+        .footer-marca { text-align: center; font-size: 0.6rem; color: var(--text-muted); margin-top: 6px; }
+
+        .leaflet-popup-content-wrapper { background: #1f2937 !important; color: #f9fafb !important; border-radius: 6px !important; border: 1px solid #374151; }
+        .leaflet-popup-tip { background: #1f2937 !important; }
+        .popup-info h3 { margin: 0 0 4px 0; font-size: 0.85rem; color: #38bdf8; border-bottom: 1px solid #374151; padding-bottom: 2px; }
+        .popup-info p { margin: 2px 0; font-size: 0.7rem; color: #d1d5db; }
+        .precio-destacado { color: #10b981; font-weight: 700; }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            #map { width: 100%; height: 40vh; }
-            #panel { width: 100%; height: 60vh; padding: 12px; }
+            #map { width: 100%; height: 38vh; }
+            #panel { width: 100%; height: 62vh; padding: 10px; }
         }
     </style>
 </head>
@@ -81,27 +89,28 @@
         <div>
             <div class="header-panel">
                 <h1>Panel Gerencial (Propietario)</h1>
-                <p>Toque un lote para editar su precio o cambiar estado a Recuperado.</p>
+                <p>📌 Toque un lote para editar precio/estado o vea la auditoría abajo.</p>
             </div>
 
-            <!-- CUADRO DE EDICIÓN DEL PROPIETARIO -->
+            <!-- CUADRO DE EDICIÓN RÁPIDA -->
             <div class="admin-box">
-                <h3 id="tituloEdicion">✏️ Seleccione un lote del mapa para editar</h3>
+                <h3 id="tituloEdicion">✏️ Panel de Control de Lotes</h3>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Precio del Lote</label>
-                        <input type="text" id="editPrecio" class="form-control" placeholder="Ej: Gs. 120.000.000">
+                        <input type="text" id="editPrecio" class="form-control" placeholder="Gs. 120.000.000">
                     </div>
                     <div class="form-group">
                         <label>Estado del Lote</label>
                         <select id="editEstado" class="form-control">
-                            <option value="libre">🟢 Disponible / Libre</option>
-                            <option value="recuperado">🟡 Recuperado</option>
+                            <option value="libre">🟢 Libre (Disponible)</option>
+                            <option value="reservado">🟡 Reservado</option>
                             <option value="vendido">🔴 Vendido</option>
+                            <option value="recuperado">🟠 Recuperado</option>
                         </select>
                     </div>
                 </div>
-                <button type="button" class="btn-accion" onclick="guardarCambiosPropietario()">💾 Actualizar Lote en Tiempo Real</button>
+                <button type="button" class="btn-accion" onclick="guardarCambiosPropietario()">💾 Actualizar Lote</button>
             </div>
 
             <button type="button" class="btn-pdf" onclick="window.print()">📥 Imprimir / Descargar Reporte PDF</button>
@@ -115,11 +124,12 @@
                             <th>Precio</th>
                             <th>Vendedor</th>
                             <th>Cliente</th>
+                            <th>C.I.</th>
                         </tr>
                     </thead>
                     <tbody id="tablaCuerpo">
                         <tr>
-                            <td colspan="5" style="text-align: center; color: #9ca3af;">Cargando datos...</td>
+                            <td colspan="6" style="text-align: center; color: #9ca3af;">Cargando datos...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -140,6 +150,20 @@
         L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
             maxZoom: 21, attribution: '© Google Maps'
         }).addTo(map);
+
+        const baseDatosLotesInfo = {
+            "Manzana_1_Lote_1": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_2": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_3": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_4": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_5": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 145.000.000" },
+            "Manzana_1_Lote_6": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 135.000.000" },
+            "Manzana_1_Lote_7": { frente: "15 m", fondo: "25 m", m2: "375 m²", precio: "Gs. 135.000.000" },
+            "Manzana_1_Lote_8": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_9": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" },
+            "Manzana_1_Lote_10": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Consultar" },
+            "Manzana_1_Lote_11": { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" }
+        };
 
         const textoCoordenadas = `
 // Manzana_1_Lote_1
@@ -249,11 +273,11 @@ P4: -25.668356, -56.937638
                 }
 
                 if (puntos.length >= 3) {
-                    // Alta sensibilidad táctil con borde más grueso y mayor opacidad
                     let poligono = L.polygon(puntos, {
                         color: '#ffffff', weight: 2, dashArray: '3, 3', fillColor: '#10b981', fillOpacity: 0.65
                     }).addTo(map);
 
+                    // Al hacer clic, despliega la información detallada y carga los datos para editar arriba
                     poligono.on('click', function(e) {
                         loteSeleccionadoAdmin = nombreLote;
                         document.getElementById('tituloEdicion').innerText = `✏️ Editando: ${nombreLote.replace('_', ' ')}`;
@@ -261,8 +285,25 @@ P4: -25.668356, -56.937638
                         const refLote = ref(db, 'lotes/' + nombreLote);
                         onValue(refLote, (snapshot) => {
                             const datos = snapshot.val() || {};
-                            document.getElementById('editPrecio').value = datos.precio || "Gs. 120.000.000";
+                            let info = baseDatosLotesInfo[nombreLote] || { frente: "12 m", fondo: "30 m", m2: "360 m²", precio: "Gs. 120.000.000" };
+                            
+                            document.getElementById('editPrecio').value = datos.precio || info.precio;
                             document.getElementById('editEstado').value = datos.estado || "libre";
+
+                            let estadoActual = datos.estado === 'vendido' ? 'Vendido' : (datos.estado === 'reservado' ? 'Reservado' : (datos.estado === 'recuperado' ? 'Recuperado' : 'Libre'));
+                            let tituloFormateado = nombreLote.replace('Manzana_', 'Manzana ').replace('_Lote_', ' - Lote ');
+
+                            let contenidoPopup = `
+                                <div class="popup-info">
+                                    <h3>${tituloFormateado}</h3>
+                                    <p>📏 Frente: <b>${info.frente}</b></p>
+                                    <p>📐 Fondo: <b>${info.fondo}</b></p>
+                                    <p>🔲 Superficie: <b>${info.m2}</b></p>
+                                    <p>💰 Precio: <span class="precio-destacado">${datos.precio || info.precio}</span></p>
+                                    <p>📌 Estado: <b>${estadoActual}</b></p>
+                                </div>
+                            `;
+                            L.popup().setLatLng(e.latlng).setContent(contenidoPopup).openOn(map);
                         }, { onlyOnce: true });
                     });
 
@@ -290,10 +331,13 @@ P4: -25.668356, -56.937638
 
             for (let nombreLote in poligonosDibujados) {
                 let datosLote = lotesEnBaseDeDatos[nombreLote] || {};
+                let infoLote = baseDatosLotesInfo[nombreLote] || { precio: "Gs. 120.000.000" };
+                
                 let estado = datosLote.estado || 'libre';
-                let precio = datosLote.precio || 'Gs. 120.000.000';
+                let precio = datosLote.precio || infoLote.precio;
                 let vendedor = datosLote.vendedor || '-';
-                let cliente = datosLote.cliente || 'Disponible / Libre';
+                let cliente = datosLote.cliente || 'Libre / Disponible';
+                let ci = datosLote.ci || '-';
 
                 let claseBadge = 'libre';
                 let textoBadge = 'Disponible';
@@ -302,14 +346,19 @@ P4: -25.668356, -56.937638
                     poligonosDibujados[nombreLote].setStyle({ fillColor: '#ef4444' });
                     claseBadge = 'vendido';
                     textoBadge = 'Vendido';
-                } else if (estado === 'recuperado') {
+                } else if (estado === 'reservado') {
                     poligonosDibujados[nombreLote].setStyle({ fillColor: '#f59e0b' });
+                    claseBadge = 'reservado';
+                    textoBadge = 'Reservado';
+                } else if (estado === 'recuperado') {
+                    poligonosDibujados[nombreLote].setStyle({ fillColor: '#d97706' });
                     claseBadge = 'recuperado';
                     textoBadge = 'Recuperado';
                 } else {
                     poligonosDibujados[nombreLote].setStyle({ fillColor: '#10b981' });
-                    cliente = 'Disponible / Libre';
+                    cliente = 'Libre / Disponible';
                     vendedor = '-';
+                    ci = '-';
                 }
 
                 let nombreCorto = nombreLote.replace('Manzana_', 'Mza ').replace('_Lote_', ' - L.: ');
@@ -321,6 +370,7 @@ P4: -25.668356, -56.937638
                         <td>${precio}</td>
                         <td>${vendedor}</td>
                         <td>${cliente}</td>
+                        <td>${ci}</td>
                     </tr>
                 `;
             }
@@ -339,14 +389,22 @@ P4: -25.668356, -56.937638
 
             const refLote = ref(db, 'lotes/' + loteSeleccionadoAdmin);
             
-            update(refLote, {
-                precio: nuevoPrecio,
-                estado: nuevoEstado
-            }).then(() => {
-                alert("¡Lote actualizado correctamente por la gerencia!");
-            }).catch((error) => {
-                alert("Error al actualizar: " + error.message);
-            });
+            // Leemos los datos actuales para no sobreescribir datos del cliente si solo se cambia el precio
+            onValue(refLote, (snapshot) => {
+                let datosActuales = snapshot.val() || {};
+                
+                update(refLote, {
+                    precio: nuevoPrecio,
+                    estado: nuevoEstado,
+                    vendedor: datosActuales.vendedor || '-',
+                    cliente: datosActuales.cliente || 'Libre / Disponible',
+                    ci: datosActuales.ci || '-'
+                }).then(() => {
+                    alert("¡Lote actualizado correctamente por la gerencia!");
+                }).catch((error) => {
+                    alert("Error al actualizar: " + error.message);
+                });
+            }, { onlyOnce: true });
         };
     </script>
 </body>
