@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador Inteligente de Murallas Prefabricadas</title>
+    <style>
+        :root {
+            --bg-card: rgba(30, 41, 59, 0.92); /* Fondo semitransparente para ver la foto de atrás */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #2563eb;
+            --success: #10b981;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* AQUÍ PONEMOS LA FOTO DE FONDO DE TU MURALLA TERMINADA */
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('fondo_muralla.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .contenedor {
+            background-color: var(--bg-card);
+            backdrop-filter: blur(8px); /* Efecto vidrio esmerilado elegante */
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            border: 1px solid var(--border);
+            margin: 20px;
+        }
+
+        .encabezado {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .encabezado h1 {
+            font-size: 1.5rem;
+            color: #38bdf8;
+            margin: 0 0 10px 0;
+        }
+
+        .encabezado p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .grupo-input {
+            margin-bottom: 15px;
+        }
+
+        .grupo-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .grupo-input input, .grupo-input select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: rgba(15, 23, 42, 0.8);
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .grupo-input input:focus, .grupo-input select:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+
+        .fila-medidas {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-calcular {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-calcular:hover {
+            background-color: #1d4ed8;
+        }
+
+        #caja-resultado {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: rgba(6, 78, 59, 0.95);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            text-align: center;
+            animation: aparecer 0.5s ease-in-out;
+        }
+
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .precio-final {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #34d399;
+            margin: 10px 0;
+        }
+
+        .btn-whatsapp {
+            display: inline-block;
+            background-color: #25D366;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-video {
+            display: inline-block;
+            background-color: #0284c7;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+        
+        .btn-video:hover { 
+            background-color: #0369a1; 
+        }
+
+        .aviso-privacidad {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <div class="encabezado">
+            <h1>🚧 Cotizador de Murallas</h1>
+            <p>Calcula el costo exacto para cercar tu terreno con nuestras placas y columnas H de hormigón reforzado. ¡Resultados al instante!</p>
+        </div>
+
+        <div id="formulario-cotizacion">
+            <div class="fila-medidas">
+                <div class="grupo-input">
+                    <label>📏 Frente (Metros)</label>
+                    <input type="number" id="frente" placeholder="Ej: 12">
+                </div>
+                <div class="grupo-input">
+                    <label>📐 Fondo (Metros)</label>
+                    <input type="number" id="fondo" placeholder="Ej: 30">
+                </div>
+            </div>
+
+            <div class="grupo-input">
+                <label>¿Qué lados deseas cerrar?</label>
+                <select id="tipo-cierre">
+                    <option value="completo">Los 4 lados (Perímetro Completo)</option>
+                    <option value="sin_frente">Solo 3 lados (Costados y Fondo)</option>
+                </select>
+            </div>
+
+            <div class="grupo-input">
+                <label>👤 Tu Nombre</label>
+                <input type="text" id="nombre" placeholder="¿Cómo te llamas?">
+            </div>
+
+            <div class="grupo-input">
+                <label>📲 Tu WhatsApp (Para enviarte el diseño)</label>
+                <input type="tel" id="whatsapp" placeholder="Ej: 0981 123 456">
+            </div>
+
+            <button class="btn-calcular" onclick="calcularYGuardar()">Revelar Presupuesto Ahora</button>
+            <p class="aviso-privacidad">🔒 Tus datos están seguros. No enviamos spam.</p>
+        </div>
+
+        <!-- RESULTADO -->
+        <div id="caja-resultado">
+            <h3 style="margin: 0 0 10px 0; color: white;">Presupuesto Estimado</h3>
+            <p style="margin: 0; font-size: 0.9rem; color: #a7f3d0;">Total de metros lineales: <b id="metros-totales">0</b> m</p>
+            <div class="precio-final" id="precio-mostrado">Gs. 0</div>
+            
+            <p style="margin: 5px 0; font-size: 0.9rem; color: #fde047;">📏 Altura terminada: <b>2 metros</b></p>
+            <p style="margin: 0; font-size: 0.8rem; color: #d1fae5;">* Incluye materiales (placas y columnas H) y mano de obra.</p>
+            <p style="margin: 0; font-size: 0.8rem; color: #d1fae5; margin-bottom: 15px;">* Presupuesto válido para Itauguá y alrededores.</p>
+            
+            <!-- Botón para ver video de ejemplo -->
+            <a href="video_muralla.mp4" target="_blank" class="btn-video">
+                🎬 Ver video de ejemplo de la muralla
+            </a>
+
+            <a href="#" id="btn-wa-directo" target="_blank" class="btn-whatsapp">
+                💬 Hablar con un Asesor para cerrar trato
+            </a>
+        </div>
+    </div>
+
+    <!-- Módulos de Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg6rZnqUFgTcRiAHA0AWvYR-imovVb_0s",
+            authDomain: "gestorinmobiliario-d68b3.firebaseapp.com",
+            databaseURL: "https://gestorinmobiliario-d68b3-default-rtdb.firebaseio.com",
+            projectId: "gestorinmobiliario-d68b3",
+            storageBucket: "gestorinmobiliario-d68b3.firebasestorage.app",
+            messagingSenderId: "927434078075",
+            appId: "1:927434078075:web:95bd3c4e6720bcd282afde"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.calcularYGuardar = function() {
+            let frente = parseFloat(document.getElementById('frente').value);
+            let fondo = parseFloat(document.getElementById('fondo').value);
+            let tipoCierre = document.getElementById('tipo-cierre').value;
+            let nombre = document.getElementById('nombre').value.trim();
+            let whatsapp = document.getElementById('whatsapp').value.trim();
+
+            if (!frente || !fondo || !nombre || !whatsapp) {
+                alert("⚠️ Por favor, completa todas las medidas y tus datos de contacto para ver el presupuesto.");
+                return;
+            }
+
+            let metrosLineales = (frente * 2) + (fondo * 2);
+            if (tipoCierre === 'sin_frente') {
+                metrosLineales = metrosLineales - frente;
+            }
+
+            // Precio configurado a 340.000 Gs
+            let precioPorMetroLineal = 340000; 
+            let costoTotal = metrosLineales * precioPorMetroLineal;
+
+            let costoFormateado = "Gs. " + costoTotal.toLocaleString('es-PY');
+
+            const idProspecto = "lead_" + Date.now();
+            const prospectoRef = ref(db, 'clientes_muralla_directos/' + idProspecto);
+
+            set(prospectoRef, {
+                nombre: nombre,
+                telefono: whatsapp,
+                terreno_frente: frente,
+                terreno_fondo: fondo,
+                metros_lineales: metrosLineales,
+                tipo_cierre: tipoCierre,
+                presupuesto_entregado: costoTotal,
+                fecha: new Date().toISOString()
+            }).then(() => {
+                document.getElementById('formulario-cotizacion').style.display = 'none';
+                document.getElementById('caja-resultado').style.display = 'block';
+
+                document.getElementById('metros-totales').innerText = metrosLineales;
+                document.getElementById('precio-mostrado').innerText = costoFormateado;
+
+                // Tu número configurado
+                let miNumeroFabrica = "595991224697"; 
+                let mensajeWa = `Hola! Acabo de usar la calculadora web. Mi terreno es de ${frente}x${fondo}m (${metrosLineales}m lineales, altura 2m). El presupuesto me salió ${costoFormateado}. Quiero coordinar una visita o saber más.`;
+                document.getElementById('btn-wa-directo').href = `https://wa.me/${miNumeroFabrica}?text=${encodeURIComponent(mensajeWa)}`;
+
+            }).catch((error) => {
+                console.error("Error al guardar prospecto:", error);
+                alert("Hubo un error de conexión, intenta de nuevo.");
+            });
+        };
+    </script>
+</body>
+</html>
