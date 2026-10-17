@@ -98,22 +98,11 @@
         .precio-valor.flete { color: var(--precio-2); }
         .precio-valor.taller { color: var(--precio-3); }
 
-        /* Estilo para los avisos finales (IVA, validez, etc.) */
         .avisos-finales {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
-            font-size: 0.8rem;
-            color: #94a3b8; /* Gris suave */
-            line-height: 1.6;
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);
+            font-size: 0.8rem; color: #94a3b8; line-height: 1.6;
         }
-        .avisos-finales b {
-            color: #cbd5e1;
-        }
-        .alerta-iva {
-            color: #fbbf24; /* Amarillo de advertencia suave */
-            font-weight: bold;
-        }
+        .alerta-iva { color: #fbbf24; font-weight: bold; }
 
         .btn-whatsapp {
             display: inline-block; background-color: #25D366; color: white; text-decoration: none;
@@ -160,9 +149,28 @@
 
                 <div class="grupo-input">
                     <label>¿Qué lados deseas cerrar?</label>
-                    <select id="tipo-cierre">
+                    <select id="tipo-cierre" onchange="cambiarTipoCierre()">
                         <option value="completo">Los 4 lados (Perímetro Completo)</option>
                         <option value="sin_frente">Solo 3 lados (Costados y Fondo)</option>
+                    </select>
+                </div>
+
+                <!-- Selector de cantidad de portones -->
+                <div class="grupo-input" id="grupo-portones">
+                    <label>🚪 ¿Cuántos portones frontales necesitas?</label>
+                    <select id="cantidad-portones" onchange="cambiarCantidadPortones()">
+                        <option value="1">1 Portón estándar (3.5 metros)</option>
+                        <option value="2">2 Portones para dúplex (7 metros)</option>
+                        <option value="0">Ninguno (Cerrar todo con muralla ciega)</option>
+                    </select>
+                </div>
+
+                <!-- Selector de TIPO de portón -->
+                <div class="grupo-input" id="grupo-tipo-porton">
+                    <label>⚙️ Tipo de apertura del portón</label>
+                    <select id="tipo-porton">
+                        <option value="Corredizo">Corredizo (Requiere buen espacio lateral)</option>
+                        <option value="Basculante">Basculante / Levadizo (Ideal dúplex o poco espacio)</option>
                     </select>
                 </div>
             </div>
@@ -198,10 +206,7 @@
                 
                 <!-- Aviso del Portón -->
                 <div id="aviso-porton" class="caja-porton">
-                    <p>
-                        <strong style="color: #38bdf8;">🚪 + Portón Metálico Terminado (3.5m)</strong><br>
-                        Se ha agregado el costo del portón frontal calculado a Gs. 1.100.000 por metro lineal.
-                    </p>
+                    <!-- El texto se inserta con Javascript -->
                 </div>
             </div>
             
@@ -223,7 +228,6 @@
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Vienes a buscar los materiales a nuestra fábrica.</div>
             </div>
             
-            <!-- AVISOS LEGALES / ACLARACIONES -->
             <div class="avisos-finales">
                 <span class="alerta-iva">⚠️ Importante: Todos los precios expresados son SIN IVA.</span><br>
                 • Los precios de instalación son referenciales y válidos para Itauguá y ciudades aledañas.<br>
@@ -249,6 +253,26 @@
             } else {
                 document.getElementById('seccion-terreno').style.display = 'none';
                 document.getElementById('seccion-lineales').style.display = 'block';
+            }
+        }
+
+        function cambiarTipoCierre() {
+            const tipo = document.getElementById('tipo-cierre').value;
+            if (tipo === 'completo') {
+                document.getElementById('grupo-portones').style.display = 'block';
+                cambiarCantidadPortones(); 
+            } else {
+                document.getElementById('grupo-portones').style.display = 'none';
+                document.getElementById('grupo-tipo-porton').style.display = 'none';
+            }
+        }
+
+        function cambiarCantidadPortones() {
+            const cantidad = parseInt(document.getElementById('cantidad-portones').value);
+            if (cantidad > 0) {
+                document.getElementById('grupo-tipo-porton').style.display = 'block';
+            } else {
+                document.getElementById('grupo-tipo-porton').style.display = 'none';
             }
         }
     </script>
@@ -279,6 +303,10 @@
             let metrosLineales = 0;
             let huboDescuentoPorton = false;
             let costoPortonAgregado = 0;
+            let cantidadPortones = 0;
+            let tipoApertura = "";
+            let metrosPortonTotal = 0;
+            let precioMetroPorton = 1100000; // Por defecto (Corredizo)
 
             if (!nombre || !whatsapp) {
                 alert("⚠️ Por favor, ingresa tu nombre y WhatsApp para ver los presupuestos.");
@@ -289,6 +317,7 @@
                 let frente = parseFloat(document.getElementById('frente').value);
                 let fondo = parseFloat(document.getElementById('fondo').value);
                 let tipoCierre = document.getElementById('tipo-cierre').value;
+                cantidadPortones = parseInt(document.getElementById('cantidad-portones').value);
 
                 if (!frente || !fondo) {
                     alert("⚠️ Ingresa las medidas del frente y fondo.");
@@ -299,12 +328,20 @@
 
                 if (tipoCierre === 'sin_frente') {
                     metrosLineales = metrosLineales - frente;
+                    cantidadPortones = 0; 
                 } else if (tipoCierre === 'completo') {
-                    // Si cierra los 4 lados: Descuenta 3.5m de muro y suma el precio del portón
-                    metrosLineales = metrosLineales - 3.5;
-                    huboDescuentoPorton = true;
-                    // El portón son 3.5 metros a 1.100.000 Gs el metro lineal = 3.850.000 Gs.
-                    costoPortonAgregado = 3.5 * 1100000; 
+                    metrosPortonTotal = cantidadPortones * 3.5;
+                    metrosLineales = metrosLineales - metrosPortonTotal;
+                    huboDescuentoPorton = cantidadPortones > 0;
+                    
+                    if(huboDescuentoPorton) {
+                        tipoApertura = document.getElementById('tipo-porton').value;
+                        // NUEVA LÓGICA DE PRECIOS: Si es basculante, el metro sale a 1.250.000 Gs.
+                        if (tipoApertura === "Basculante") {
+                            precioMetroPorton = 1250000;
+                        }
+                    }
+                    costoPortonAgregado = metrosPortonTotal * precioMetroPorton; 
                 }
 
             } else {
@@ -317,11 +354,10 @@
             }
 
             if (metrosLineales <= 0) {
-                alert("⚠️ Las medidas ingresadas no son válidas.");
+                alert("⚠️ Las medidas ingresadas no son válidas o los portones superan los metros.");
                 return;
             }
 
-            // Calculamos el costo de la muralla y le SUMAMOS el costo del portón (si aplica)
             let precio1_Completo = (metrosLineales * 340000) + costoPortonAgregado;
             let precio2_Flete = (metrosLineales * 250000) + costoPortonAgregado;
             let precio3_Taller = (metrosLineales * 180000) + costoPortonAgregado;
@@ -337,6 +373,8 @@
                 presupuesto_completo: precio1_Completo,
                 presupuesto_flete: precio2_Flete,
                 presupuesto_taller: precio3_Taller,
+                cantidad_portones: cantidadPortones,
+                tipo_apertura: tipoApertura,
                 incluye_porton: huboDescuentoPorton,
                 fecha: new Date().toISOString()
             }).then(() => {
@@ -346,8 +384,15 @@
 
                 document.getElementById('metros-totales').innerText = metrosLineales;
                 
-                // Mostrar u ocultar el recuadro que avisa sobre el portón
                 if (huboDescuentoPorton) {
+                    let textPorton = cantidadPortones === 1 ? "1 Portón" : "2 Portones";
+                    let precioFormateadoParaAviso = precioMetroPorton.toLocaleString('es-PY');
+                    document.getElementById('aviso-porton').innerHTML = `
+                        <p>
+                            <strong style="color: #38bdf8;">🚪 + ${textPorton} tipo ${tipoApertura} (${metrosPortonTotal}m)</strong><br>
+                            Se ha agregado el costo correspondiente a Gs. ${precioFormateadoParaAviso} por metro lineal.
+                        </p>
+                    `;
                     document.getElementById('aviso-porton').style.display = 'block';
                 } else {
                     document.getElementById('aviso-porton').style.display = 'none';
@@ -357,9 +402,12 @@
                 document.getElementById('precio-flete').innerText = "Gs. " + precio2_Flete.toLocaleString('es-PY');
                 document.getElementById('precio-taller').innerText = "Gs. " + precio3_Taller.toLocaleString('es-PY');
 
-                // Ajustar el texto de WhatsApp para que tú sepas que cotizó con portón
+                // Mensaje de WhatsApp Dinámico
                 let miNumeroFabrica = "595991224697"; 
-                let textoPortonWa = huboDescuentoPorton ? " + Portón de 3.5m" : "";
+                let textoPortonWa = "";
+                if(cantidadPortones === 1) textoPortonWa = ` + 1 Portón (${tipoApertura})`;
+                if(cantidadPortones === 2) textoPortonWa = ` + 2 Portones Dúplex (${tipoApertura})`;
+
                 let mensajeWa = `Hola! Usé el cotizador para ${metrosLineales}m lineales de muralla${textoPortonWa}. Me interesan estas opciones (SIN IVA):\n1. Obra terminada: Gs. ${precio1_Completo.toLocaleString('es-PY')}\n2. Con flete: Gs. ${precio2_Flete.toLocaleString('es-PY')}\n3. Retirar de taller: Gs. ${precio3_Taller.toLocaleString('es-PY')}\nQuiero más información.`;
                 document.getElementById('btn-wa-directo').href = `https://wa.me/${miNumeroFabrica}?text=${encodeURIComponent(mensajeWa)}`;
 
