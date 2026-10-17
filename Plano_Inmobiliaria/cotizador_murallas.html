@@ -12,9 +12,9 @@
             --primary: #2563eb;
             --success: #10b981;
             --border: #334155;
-            --precio-1: #34d399; /* Verde claro */
-            --precio-2: #60a5fa; /* Azul claro */
-            --precio-3: #fbbf24; /* Amarillo/Dorado */
+            --precio-1: #34d399; 
+            --precio-2: #60a5fa; 
+            --precio-3: #fbbf24; 
         }
 
         body {
@@ -36,7 +36,7 @@
             background-color: var(--bg-card);
             backdrop-filter: blur(8px);
             width: 100%;
-            max-width: 480px; /* Un poco más ancho para los nuevos campos */
+            max-width: 480px;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6);
@@ -44,213 +44,88 @@
             margin: 20px;
         }
 
-        .encabezado {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+        .encabezado { text-align: center; margin-bottom: 25px; }
+        .encabezado h1 { font-size: 1.5rem; color: #38bdf8; margin: 0 0 10px 0; }
+        .encabezado p { color: var(--text-muted); font-size: 0.9rem; margin: 0; line-height: 1.5; }
 
-        .encabezado h1 {
-            font-size: 1.5rem;
-            color: #38bdf8;
-            margin: 0 0 10px 0;
-        }
-
-        .encabezado p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin: 0;
-            line-height: 1.5;
-        }
-
-        .grupo-input {
-            margin-bottom: 15px;
-        }
-
-        .grupo-input label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #cbd5e1;
-        }
-
+        .grupo-input { margin-bottom: 15px; }
+        .grupo-input label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
         .grupo-input input, .grupo-input select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background-color: rgba(15, 23, 42, 0.8);
-            color: white;
-            font-size: 1rem;
-            box-sizing: border-box;
+            width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border);
+            background-color: rgba(15, 23, 42, 0.8); color: white; font-size: 1rem; box-sizing: border-box;
         }
+        .grupo-input input:focus, .grupo-input select:focus { outline: none; border-color: #38bdf8; }
 
-        .grupo-input input:focus, .grupo-input select:focus {
-            outline: none;
-            border-color: #38bdf8;
-        }
+        .fila-medidas { display: flex; gap: 15px; }
 
-        .fila-medidas {
-            display: flex;
-            gap: 15px;
+        .separador { text-align: center; margin: 20px 0; position: relative; }
+        .separador::before, .separador::after {
+            content: ""; position: absolute; top: 50%; width: 40%; height: 1px; background-color: var(--border);
         }
-
-        /* Separador visual para la nueva sección */
-        .separador {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-        }
-        .separador::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 40%;
-            height: 1px;
-            background-color: var(--border);
-        }
-        .separador::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            right: 0;
-            width: 40%;
-            height: 1px;
-            background-color: var(--border);
-        }
-        .separador span {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-weight: bold;
-            background-color: var(--bg-card);
-            padding: 0 10px;
-        }
+        .separador::before { left: 0; } .separador::after { right: 0; }
+        .separador span { color: var(--text-muted); font-size: 0.8rem; font-weight: bold; background-color: var(--bg-card); padding: 0 10px; }
 
         .btn-calcular {
-            width: 100%;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s;
+            width: 100%; background-color: var(--primary); color: white; border: none;
+            padding: 14px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer;
+            margin-top: 10px; transition: background-color 0.3s;
         }
-
-        .btn-calcular:hover {
-            background-color: #1d4ed8;
-        }
+        .btn-calcular:hover { background-color: #1d4ed8; }
 
         #caja-resultado {
-            display: none;
-            margin-top: 25px;
-            padding: 20px;
-            background-color: rgba(15, 23, 42, 0.95); /* Fondo oscuro para resaltar los precios */
-            border: 1px solid var(--primary);
-            border-radius: 8px;
-            animation: aparecer 0.5s ease-in-out;
+            display: none; margin-top: 25px; padding: 20px; background-color: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--primary); border-radius: 8px; animation: aparecer 0.5s ease-in-out;
         }
 
-        @keyframes aparecer {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes aparecer { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .resumen-metros {
-            text-align: center;
-            font-size: 1.1rem;
-            color: #f8fafc;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-        }
+        .resumen-metros { text-align: center; font-size: 1.1rem; color: #f8fafc; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         
-        .descuento-info {
-            font-size: 0.8rem;
-            color: #fbbf24;
-            display: block;
-            margin-top: 5px;
+        .caja-porton {
+            background-color: rgba(56, 189, 248, 0.1); border: 1px dashed #38bdf8;
+            padding: 12px; border-radius: 6px; margin-top: 10px; display: none;
         }
+        .caja-porton p { margin: 0; font-size: 0.85rem; color: #bae6fd; line-height: 1.4; text-align: left;}
 
-        /* Cajas de precios */
-        .caja-precio {
-            background-color: rgba(30, 41, 59, 0.8);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--border);
-        }
-
+        .caja-precio { background-color: rgba(30, 41, 59, 0.8); border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 4px solid var(--border); }
         .caja-precio.completo { border-left-color: var(--precio-1); }
         .caja-precio.flete { border-left-color: var(--precio-2); }
         .caja-precio.taller { border-left-color: var(--precio-3); }
 
-        .caja-precio-titulo {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .precio-valor {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0;
-        }
-
+        .caja-precio-titulo { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; font-weight: bold; }
+        .precio-valor { font-size: 1.5rem; font-weight: bold; margin: 0; }
         .precio-valor.completo { color: var(--precio-1); }
         .precio-valor.flete { color: var(--precio-2); }
         .precio-valor.taller { color: var(--precio-3); }
 
+        /* Estilo para los avisos finales (IVA, validez, etc.) */
+        .avisos-finales {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: #94a3b8; /* Gris suave */
+            line-height: 1.6;
+        }
+        .avisos-finales b {
+            color: #cbd5e1;
+        }
+        .alerta-iva {
+            color: #fbbf24; /* Amarillo de advertencia suave */
+            font-weight: bold;
+        }
 
         .btn-whatsapp {
-            display: inline-block;
-            background-color: #25D366;
-            color: white;
-            text-decoration: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            margin-top: 15px;
-            width: 100%;
-            text-align: center;
-            box-sizing: border-box;
+            display: inline-block; background-color: #25D366; color: white; text-decoration: none;
+            padding: 12px 20px; border-radius: 6px; font-weight: bold; margin-top: 15px; width: 100%; text-align: center; box-sizing: border-box;
         }
-
         .btn-video {
-            display: inline-block;
-            background-color: #0284c7;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            margin-top: 15px;
-            width: 100%;
-            text-align: center;
-            box-sizing: border-box;
-            font-size: 0.9rem;
+            display: inline-block; background-color: #0284c7; color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 6px; font-weight: bold; margin-top: 15px; width: 100%; text-align: center; box-sizing: border-box; font-size: 0.9rem;
         }
-        
-        .btn-video:hover { 
-            background-color: #0369a1; 
-        }
-
-        .aviso-privacidad {
-            font-size: 0.7rem;
-            color: #64748b;
-            text-align: center;
-            margin-top: 15px;
-        }
-        
-        /* Ocultar elementos según la selección */
-        .opcion-oculta {
-            display: none;
-        }
+        .btn-video:hover { background-color: #0369a1; }
+        .aviso-privacidad { font-size: 0.7rem; color: #64748b; text-align: center; margin-top: 15px; }
+        .opcion-oculta { display: none; }
     </style>
 </head>
 <body>
@@ -262,7 +137,6 @@
         </div>
 
         <div id="formulario-cotizacion">
-            
             <div class="grupo-input">
                 <label>¿Cómo quieres calcular tu presupuesto?</label>
                 <select id="metodo-calculo" onchange="cambiarMetodoCalculo()">
@@ -320,34 +194,42 @@
         <!-- RESULTADO -->
         <div id="caja-resultado">
             <div class="resumen-metros">
-                Total a construir: <b id="metros-totales">0</b> metros lineales
-                <span id="mensaje-descuento" class="descuento-info opcion-oculta">
-                    * Se descontaron 3.5m del portón frontal.
-                </span>
+                Muralla a construir: <b id="metros-totales">0</b> metros lineales
+                
+                <!-- Aviso del Portón -->
+                <div id="aviso-porton" class="caja-porton">
+                    <p>
+                        <strong style="color: #38bdf8;">🚪 + Portón Metálico Terminado (3.5m)</strong><br>
+                        Se ha agregado el costo del portón frontal calculado a Gs. 1.100.000 por metro lineal.
+                    </p>
+                </div>
             </div>
             
-            <!-- Precio 1: Obra Terminada -->
             <div class="caja-precio completo">
                 <div class="caja-precio-titulo">1. Material + Mano de Obra (Llave en mano)</div>
                 <div class="precio-valor completo" id="precio-completo">Gs. 0</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Instalación completa en Itauguá y alrededores.</div>
             </div>
 
-            <!-- Precio 2: Material Puesto en Obra -->
             <div class="caja-precio flete">
                 <div class="caja-precio-titulo">2. Solo Material + Flete (Puesto en obra)</div>
                 <div class="precio-valor flete" id="precio-flete">Gs. 0</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Te llevamos las placas y columnas a tu terreno.</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Te llevamos los materiales a tu terreno.</div>
             </div>
 
-            <!-- Precio 3: Retirado de Taller -->
             <div class="caja-precio taller">
                 <div class="caja-precio-titulo">3. Solo Material (Retirado del taller)</div>
                 <div class="precio-valor taller" id="precio-taller">Gs. 0</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Vienes a buscar los materiales a nuestra fábrica.</div>
             </div>
             
-            <!-- Botón para ver video -->
+            <!-- AVISOS LEGALES / ACLARACIONES -->
+            <div class="avisos-finales">
+                <span class="alerta-iva">⚠️ Importante: Todos los precios expresados son SIN IVA.</span><br>
+                • Los precios de instalación son referenciales y válidos para Itauguá y ciudades aledañas.<br>
+                • Se requerirá una visita técnica previa para confirmar el terreno antes del inicio de obra.
+            </div>
+            
             <a href="video_muralla.mp4" target="_blank" class="btn-video">
                 🎬 Ver video de ejemplo de la muralla
             </a>
@@ -359,7 +241,6 @@
     </div>
 
     <script>
-        // Función para cambiar entre Terreno y Metros Lineales
         function cambiarMetodoCalculo() {
             const metodo = document.getElementById('metodo-calculo').value;
             if (metodo === 'terreno') {
@@ -397,6 +278,7 @@
             
             let metrosLineales = 0;
             let huboDescuentoPorton = false;
+            let costoPortonAgregado = 0;
 
             if (!nombre || !whatsapp) {
                 alert("⚠️ Por favor, ingresa tu nombre y WhatsApp para ver los presupuestos.");
@@ -418,9 +300,11 @@
                 if (tipoCierre === 'sin_frente') {
                     metrosLineales = metrosLineales - frente;
                 } else if (tipoCierre === 'completo') {
-                    // Descuento del portón solo si se cierran los 4 lados
+                    // Si cierra los 4 lados: Descuenta 3.5m de muro y suma el precio del portón
                     metrosLineales = metrosLineales - 3.5;
                     huboDescuentoPorton = true;
+                    // El portón son 3.5 metros a 1.100.000 Gs el metro lineal = 3.850.000 Gs.
+                    costoPortonAgregado = 3.5 * 1100000; 
                 }
 
             } else {
@@ -432,16 +316,15 @@
                 metrosLineales = metrosSueltos;
             }
 
-            // Asegurarnos de que no haya metros negativos por error
             if (metrosLineales <= 0) {
                 alert("⚠️ Las medidas ingresadas no son válidas.");
                 return;
             }
 
-            // Los 3 Precios Configurados
-            let precio1_Completo = metrosLineales * 340000;
-            let precio2_Flete = metrosLineales * 250000;
-            let precio3_Taller = metrosLineales * 180000;
+            // Calculamos el costo de la muralla y le SUMAMOS el costo del portón (si aplica)
+            let precio1_Completo = (metrosLineales * 340000) + costoPortonAgregado;
+            let precio2_Flete = (metrosLineales * 250000) + costoPortonAgregado;
+            let precio3_Taller = (metrosLineales * 180000) + costoPortonAgregado;
 
             const idProspecto = "lead_" + Date.now();
             const prospectoRef = ref(db, 'clientes_muralla_directos/' + idProspecto);
@@ -454,26 +337,30 @@
                 presupuesto_completo: precio1_Completo,
                 presupuesto_flete: precio2_Flete,
                 presupuesto_taller: precio3_Taller,
-                descuento_porton: huboDescuentoPorton,
+                incluye_porton: huboDescuentoPorton,
                 fecha: new Date().toISOString()
             }).then(() => {
-                // Mostrar resultados
+                
                 document.getElementById('formulario-cotizacion').style.display = 'none';
                 document.getElementById('caja-resultado').style.display = 'block';
 
                 document.getElementById('metros-totales').innerText = metrosLineales;
                 
+                // Mostrar u ocultar el recuadro que avisa sobre el portón
                 if (huboDescuentoPorton) {
-                    document.getElementById('mensaje-descuento').style.display = 'block';
+                    document.getElementById('aviso-porton').style.display = 'block';
+                } else {
+                    document.getElementById('aviso-porton').style.display = 'none';
                 }
 
                 document.getElementById('precio-completo').innerText = "Gs. " + precio1_Completo.toLocaleString('es-PY');
                 document.getElementById('precio-flete').innerText = "Gs. " + precio2_Flete.toLocaleString('es-PY');
                 document.getElementById('precio-taller').innerText = "Gs. " + precio3_Taller.toLocaleString('es-PY');
 
-                // WhatsApp
+                // Ajustar el texto de WhatsApp para que tú sepas que cotizó con portón
                 let miNumeroFabrica = "595991224697"; 
-                let mensajeWa = `Hola! Usé el cotizador para ${metrosLineales}m lineales. Me interesan estas opciones de presupuesto:\n1. Obra terminada: Gs. ${precio1_Completo.toLocaleString('es-PY')}\n2. Con flete: Gs. ${precio2_Flete.toLocaleString('es-PY')}\n3. Retirar de taller: Gs. ${precio3_Taller.toLocaleString('es-PY')}\nQuiero más información.`;
+                let textoPortonWa = huboDescuentoPorton ? " + Portón de 3.5m" : "";
+                let mensajeWa = `Hola! Usé el cotizador para ${metrosLineales}m lineales de muralla${textoPortonWa}. Me interesan estas opciones (SIN IVA):\n1. Obra terminada: Gs. ${precio1_Completo.toLocaleString('es-PY')}\n2. Con flete: Gs. ${precio2_Flete.toLocaleString('es-PY')}\n3. Retirar de taller: Gs. ${precio3_Taller.toLocaleString('es-PY')}\nQuiero más información.`;
                 document.getElementById('btn-wa-directo').href = `https://wa.me/${miNumeroFabrica}?text=${encodeURIComponent(mensajeWa)}`;
 
             }).catch((error) => {
